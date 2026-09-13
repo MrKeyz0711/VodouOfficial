@@ -3,31 +3,82 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vodou — Live Funk, Rock & Soul</title>
+<title>Vodou — Live Funk, Rock & Soul | Lehighton, PA</title>
+<meta name="description" content="Vodou is an eight-piece band from Lehighton, PA playing funk, rock, soul and more. Catch live shows, listen to clips, and book us.">
+<meta name="theme-color" content="#128A43">
+<meta property="og:title" content="Vodou — Live Funk, Rock & Soul">
+<meta property="og:description" content="Eight-piece band. Funk, rock, soul, and more — built for the stage. Based in Lehighton, PA.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://vodouband.com/band-live-musikfest.jpg">
+<meta name="twitter:card" content="summary_large_image">
+
+<!-- TODO: replace https://vodouband.com with your real live domain everywhere it appears below -->
+<link rel="canonical" href="https://vodouband.com/">
+<meta property="og:url" content="https://vodouband.com/">
+
+<!-- Favicon (uses the existing eye mark; swap in a dedicated 180x180 PNG for apple-touch-icon if you have one) -->
+<link rel="icon" href="eye-mark.png" type="image/png">
+<link rel="apple-touch-icon" href="eye-mark.png">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bevan&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://web3forms.com/client/script.js" async defer></script>
+<script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+
+<!-- Structured data so search engines can show Vodou as a band with real details -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "MusicGroup",
+  "name": "Vodou",
+  "genre": ["Funk", "Rock", "Soul"],
+  "url": "https://vodouband.com/",
+  "image": "https://vodouband.com/band-live-musikfest.jpg",
+  "foundingLocation": {
+    "@type": "Place",
+    "name": "Lehighton, PA"
+  },
+  "sameAs": [
+    "https://instagram.com/vodouofficial",
+    "https://www.youtube.com/@VodouOfficial"
+  ]
+}
+</script>
+
+<!-- Analytics: uncomment and set data-domain to add privacy-friendly Plausible analytics once the site is live
+<script defer data-domain="vodouband.com" src="https://plausible.io/js/script.js"></script>
+-->
+<style>
+  .visually-hidden {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>
 <style>
   :root {
     --paper: #F4F1E6;
-    --paper-alt: #EAE4D0;
+    --paper-alt: #DFD9C3;
     --ink: #141412;
-    --ink-soft: #55534a;
+    --ink-soft: #383732;
     --green: #128A43;
     --green-deep: #0b5f2f;
     --lime: #A5C650;
     --line: #141412;
     --white: #ffffff;
-
     --font-display: 'Bevan', serif;
     --font-body: 'Work Sans', sans-serif;
-
     --maxw: 1120px;
+    --ease: cubic-bezier(.2,.7,.3,1);
   }
 
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
-
   body {
     margin: 0;
     background: var(--paper);
@@ -39,6 +90,20 @@
 
   img { max-width: 100%; display: block; }
   a { color: inherit; }
+
+  .skip-link {
+    position: absolute;
+    top: -100px;
+    left: 16px;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 10px 16px;
+    z-index: 100;
+    font-weight: 700;
+    border-radius: 3px;
+    text-decoration: none;
+  }
+  .skip-link:focus { top: 12px; }
 
   .wrap {
     max-width: var(--maxw);
@@ -58,13 +123,14 @@
   section { padding: 96px 0; border-bottom: 3px solid var(--line); }
   section:last-of-type { border-bottom: none; }
 
-  /* ---------- Header ---------- */
+  /* Header */
   header {
     position: sticky;
     top: 0;
     z-index: 50;
     background: rgba(244, 241, 230, 0.94);
-    backdrop-filter: blur(6px);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border-bottom: 3px solid var(--line);
   }
   .nav {
@@ -75,13 +141,10 @@
     max-width: var(--maxw);
     margin: 0 auto;
   }
-  .nav-mark img {
-    height: 34px;
-    width: auto;
-  }
+  .nav-mark img { height: 34px; width: auto; }
   .nav-links {
     display: flex;
-    gap: 32px;
+    gap: 28px;
     list-style: none;
     margin: 0; padding: 0;
   }
@@ -94,7 +157,8 @@
     border-bottom: 2px solid transparent;
     transition: border-color 0.2s ease, color 0.2s ease;
   }
-  .nav-links a:hover { border-color: var(--green); color: var(--green-deep); }
+  .nav-links a:hover,
+  .nav-links a.active { border-color: var(--green); color: var(--green-deep); }
 
   .nav-toggle {
     display: none;
@@ -107,7 +171,7 @@
     cursor: pointer;
   }
 
-  /* ---------- Hero ---------- */
+  /* Hero */
   .hero {
     padding-top: 76px;
     padding-bottom: 76px;
@@ -125,13 +189,16 @@
     width: 300px;
     height: auto;
     transform: rotate(-4deg);
+    transition: transform 0.4s var(--ease);
   }
+  .hero-mark:hover { transform: rotate(-2deg) scale(1.03); }
   .eyebrow {
     color: var(--green-deep);
     font-weight: 700;
     font-size: 0.95rem;
     margin-bottom: 18px;
     display: inline-block;
+    letter-spacing: 0.02em;
   }
   .hero-wordmark {
     width: min(100%, 460px);
@@ -153,15 +220,16 @@
     font-size: 1rem;
     border: 2.5px solid var(--line);
     cursor: pointer;
-    transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
+    transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
   }
   .btn:hover { transform: translateY(-2px); }
   .btn-solid { background: var(--ink); color: var(--paper); }
   .btn-solid:hover { background: var(--green); border-color: var(--line); color: var(--white); }
   .btn-outline { background: transparent; color: var(--ink); }
   .btn-outline:hover { background: var(--ink); color: var(--paper); }
+  .btn-sm { padding: 6px 14px; font-size: 0.85rem; }
 
-  /* ---------- Section headings ---------- */
+  /* Section heads */
   .sec-head {
     display: flex;
     align-items: baseline;
@@ -173,7 +241,7 @@
   .sec-head h2 { font-size: clamp(2rem, 4vw, 2.7rem); color: var(--ink); }
   .sec-head .sec-note { color: var(--ink-soft); font-size: 0.98rem; max-width: 34ch; }
 
-  /* ---------- Bio ---------- */
+  /* Bio */
   .bio-photo {
     width: 100%;
     aspect-ratio: 1289 / 713;
@@ -186,9 +254,6 @@
     font-size: 0.85rem;
     color: var(--ink-soft);
     text-align: right;
-  }
-  .bio-grid {
-    display: block;
   }
   .bio-copy p { max-width: 56ch; }
 
@@ -233,24 +298,51 @@
     color: var(--green-deep);
     font-weight: 700;
   }
-
-  .members {
+  .repertoire-dropdown { max-width: none; margin-top: 32px; }
+  .repertoire-list {
+    margin: 0;
+    padding: 4px 18px 18px;
+    list-style: none;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 14px 28px;
-    margin-top: 28px;
-    list-style: none;
-    padding: 0;
+    gap: 0 32px;
   }
-  .members li {
+  .repertoire-list li {
+    padding: 10px 0;
     border-top: 2px solid var(--line);
-    padding-top: 10px;
-    font-size: 0.98rem;
+    color: var(--ink-soft);
+    font-size: 0.95rem;
   }
-  .members li strong { display: block; color: var(--ink); font-weight: 700; }
-  .members li span { color: var(--ink-soft); font-size: 0.9rem; }
+  .repertoire-list li:nth-child(-n+2) { border-top: none; }
+  .repertoire-artist {
+    display: block;
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+    opacity: 0.85;
+    margin-top: 2px;
+  }
+  .repertoire-tag-original {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .repertoire-more {
+    color: var(--ink-soft);
+    font-style: italic;
+    opacity: 0.85;
+  }
+  .repertoire-tag {
+    display: inline-block;
+    margin-left: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--green-deep);
+    background: var(--lime);
+    padding: 2px 9px;
+    border-radius: 20px;
+    vertical-align: middle;
+  }
 
-  /* ---------- Meet the band ---------- */
+  /* Meet the band */
   .meet-band { margin-top: 72px; }
   .meet-band-grid {
     display: grid;
@@ -272,8 +364,25 @@
     object-fit: cover;
     transform-origin: 50% 40%;
     transform: scale(1);
-    transition: transform 0.55s cubic-bezier(.2,.7,.3,1), transform-origin 0.55s cubic-bezier(.2,.7,.3,1);
+    transition: transform 0.55s var(--ease), transform-origin 0.55s var(--ease);
   }
+  .photo-tooltip {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    background: rgba(20, 20, 18, 0.85);
+    color: var(--paper);
+    padding: 6px 12px;
+    border-radius: 3px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  .photo-tooltip.visible { opacity: 1; }
+
   .member-picker {
     display: flex;
     flex-wrap: wrap;
@@ -290,7 +399,7 @@
     font-size: 0.95rem;
     border-radius: 30px;
     cursor: pointer;
-    transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+    transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
   }
   .member-btn:hover { transform: translateY(-2px); }
   .member-btn.active {
@@ -324,7 +433,7 @@
   }
   .member-card p { margin: 0; max-width: none; color: var(--ink-soft); }
 
-  /* ---------- Music ---------- */
+  /* Music & Visualizer */
   .track-list { display: flex; flex-direction: column; gap: 10px; }
   .track {
     display: grid;
@@ -334,7 +443,10 @@
     padding: 16px 20px;
     background: var(--white);
     border: 2.5px solid var(--line);
+    border-radius: 3px;
+    transition: background 0.15s ease;
   }
+  .track.playing { background: var(--paper-alt); }
   .track-play {
     width: 34px; height: 34px;
     border-radius: 50%;
@@ -344,9 +456,13 @@
     background: transparent;
     cursor: pointer;
     font-size: 0.85rem;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
   }
   .track-play:hover { background: var(--green); border-color: var(--green); color: var(--white); }
-  .track-title { font-weight: 700; color: var(--ink); }
+  .track-play:disabled { cursor: default; opacity: 0.45; }
+  .track-play:disabled:hover { background: transparent; border-color: var(--ink); color: var(--ink); }
+  .track-title { font-weight: 700; color: var(--ink); display: flex; flex-direction: column; }
+  .track-title-head { display: flex; align-items: center; gap: 10px; }
   .track-title small { display: block; font-weight: 400; color: var(--ink-soft); font-size: 0.85rem; margin-top: 2px; }
   .track-len { color: var(--ink-soft); font-variant-numeric: tabular-nums; font-size: 0.92rem; }
   .track-tag {
@@ -358,43 +474,202 @@
     border-radius: 20px;
     white-space: nowrap;
   }
-
-  /* ---------- Shows ---------- */
-  .show-row {
-    display: grid;
-    grid-template-columns: 110px 1fr auto;
-    align-items: center;
-    gap: 22px;
-    padding: 22px 0;
-    border-top: 2px solid var(--line);
+  .track-progress {
+    grid-column: 1 / -1;
+    height: 6px;
+    background: #c3bda7;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: -6px;
+    display: none;
+    cursor: pointer;
   }
-  .show-row:last-child { border-bottom: 2px solid var(--line); }
-  .show-date {
+  .track.playing .track-progress { display: block; }
+  .track-progress-bar {
+    height: 100%;
+    width: 0%;
+    background: var(--green);
+    transition: width 0.1s linear;
+  }
+
+  /* Audio Equalizer Visualizer */
+  .visualizer {
+    display: none;
+    align-items: flex-end;
+    gap: 2px;
+    height: 14px;
+    width: 16px;
+  }
+  .track.playing .visualizer { display: flex; }
+  .visualizer-bar {
+    flex: 1;
+    background: var(--green-deep);
+    border-radius: 1px;
+    animation: bounce 0.6s infinite ease-in-out alternate;
+  }
+  .visualizer-bar:nth-child(1) { animation-delay: 0.1s; height: 30%; }
+  .visualizer-bar:nth-child(2) { animation-delay: 0.3s; height: 100%; }
+  .visualizer-bar:nth-child(3) { animation-delay: 0.2s; height: 60%; }
+  @keyframes bounce {
+    0% { height: 20%; }
+    100% { height: 100%; }
+  }
+
+  /* Calendar */
+  .calendar-wrap {
+    border: 2.5px solid var(--line);
+    background: var(--white);
+    max-width: 900px;
+    margin: 0 auto;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .calendar-header {
+    display: grid;
+    grid-template-columns: 48px 1fr 48px;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 20px;
+    border-bottom: 2.5px solid var(--line);
+    text-align: center;
+  }
+  .calendar-header h3 {
+    font-family: var(--font-display);
+    font-size: clamp(1.45rem, 3vw, 2rem);
+    color: var(--ink);
+  }
+  .calendar-nav {
+    width: 42px;
+    height: 42px;
+    border: 2.5px solid var(--line);
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 1.8rem;
+    line-height: 1;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+  }
+  .calendar-nav:hover {
+    background: var(--green);
+    color: var(--white);
+    transform: translateY(-2px);
+  }
+  .calendar-weekdays,
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+  }
+  .calendar-weekdays {
+    border-bottom: 2px solid var(--line);
+    background: var(--paper-alt);
+  }
+  .calendar-weekdays span {
+    padding: 10px 6px;
+    text-align: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+  }
+  .calendar-day {
+    min-height: 92px;
+    padding: 9px;
+    border-right: 1.5px solid var(--line);
+    border-bottom: 1.5px solid var(--line);
+    background: var(--white);
+    color: var(--ink-soft);
+    text-align: left;
+    cursor: default;
+    position: relative;
+  }
+  .calendar-day:nth-child(7n) { border-right: none; }
+  .calendar-day.empty {
+    background: var(--paper-alt);
+    opacity: 0.6;
+  }
+  .calendar-day-number {
+    display: inline-flex;
+    width: 30px;
+    height: 30px;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    border-radius: 50%;
+  }
+  .calendar-day.today .calendar-day-number {
+    border: 2px solid var(--green);
+    color: var(--green-deep);
+  }
+  .calendar-day.has-show {
+    cursor: pointer;
+    color: var(--ink);
+  }
+  .calendar-day.has-show:hover { background: var(--paper-alt); }
+  .calendar-day.has-show.selected {
+    background: var(--green);
+    color: var(--white);
+  }
+  .calendar-day.past-show { background: var(--paper-alt); }
+  .calendar-day.past-show .calendar-dot { opacity: 0.85; }
+  .calendar-day.has-show.selected .calendar-day-number { color: var(--white); }
+  .calendar-dot {
+    display: block;
+    margin-top: 7px;
+    padding: 4px 6px;
+    background: var(--lime);
+    color: var(--green-deep);
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1.2;
+    border-radius: 3px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .calendar-day.selected .calendar-dot {
+    background: var(--white);
+    color: var(--green-deep);
+  }
+  .calendar-event {
+    min-height: 118px;
+    padding: 22px 24px;
+    border-top: 2.5px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .calendar-event-empty {
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+  .calendar-event-date {
     font-family: var(--font-display);
     color: var(--green-deep);
-    font-size: 1.5rem;
-    line-height: 1.1;
+    font-size: 1.15rem;
+    margin-bottom: 4px;
   }
-  .show-date small { display: block; font-family: var(--font-body); color: var(--ink-soft); font-size: 0.75rem; font-weight: 700; margin-top: 4px; }
-  .show-venue { color: var(--ink); font-weight: 700; font-size: 1.08rem; }
-  .show-venue span { display: block; color: var(--ink-soft); font-weight: 400; font-size: 0.92rem; margin-top: 2px; }
-  .show-status {
-    font-size: 0.85rem;
-    padding: 8px 16px;
-    border-radius: 3px;
+  .calendar-event h3 {
+    font-family: var(--font-body);
     font-weight: 700;
-    white-space: nowrap;
-    background: var(--ink);
-    border: 2px solid var(--ink);
-    color: var(--paper);
-    text-decoration: none;
+    font-size: 1.25rem;
+    margin-bottom: 3px;
   }
-  .show-status:hover { background: var(--green); border-color: var(--green); color: var(--white); }
-  .show-status.sold { background: transparent; border-color: var(--ink-soft); color: var(--ink-soft); }
-  .show-status.info { background: transparent; border-color: var(--ink); color: var(--ink); }
-  .show-status.info:hover { background: var(--ink); color: var(--paper); }
+  .calendar-event p { margin: 0; max-width: none; }
+  .calendar-event .event-status {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 5px 11px;
+    border: 2px solid var(--ink);
+    border-radius: 3px;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
 
-  /* ---------- Gallery ---------- */
+  /* Gallery + Lightbox */
   .gallery-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -404,46 +679,129 @@
     background: var(--paper-alt);
     border: 2.5px solid var(--line);
     aspect-ratio: 1;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--ink-soft);
-    font-size: 0.85rem;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.2s ease;
   }
-  .gallery-grid .g-item.placeholder { padding: 10px; }
+  .gallery-grid .g-item:hover { transform: translateY(-3px); }
   .gallery-grid .g-item:nth-child(3n+2) { aspect-ratio: 1 / 1.35; }
   .gallery-grid .g-item img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.35s var(--ease);
   }
+  .gallery-grid .g-item:hover img { transform: scale(1.04); }
 
-  /* ---------- Merch ---------- */
-  .merch-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgba(20, 20, 18, 0.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+    padding: 24px;
   }
-  .merch-card {
-    background: var(--white);
+  .lightbox.open {
+    opacity: 1;
+    visibility: visible;
+  }
+  .lightbox img {
+    max-width: min(92vw, 1100px);
+    max-height: 88vh;
+    object-fit: contain;
+    border: 3px solid var(--paper);
+    border-radius: 4px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+  .lightbox-close {
+    position: absolute;
+    top: 18px;
+    right: 22px;
+    background: var(--paper);
     border: 2.5px solid var(--line);
+    color: var(--ink);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    font-size: 1.4rem;
+    cursor: pointer;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease, color 0.15s ease;
   }
-  .merch-photo {
-    aspect-ratio: 1;
-    background: var(--paper-alt);
-    display: flex; align-items: center; justify-content: center;
-    color: var(--ink-soft);
-    font-size: 0.85rem;
-    padding: 16px;
-    text-align: center;
-    border-bottom: 2.5px solid var(--line);
+  .lightbox-close:hover { background: var(--green); color: var(--white); }
+  .lightbox-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--paper);
+    border: 2.5px solid var(--line);
+    color: var(--ink);
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    font-size: 1.6rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease, color 0.15s ease;
   }
-  .merch-info { padding: 18px 18px 22px; }
-  .merch-info h3 { font-family: var(--font-body); font-weight: 700; font-size: 1.05rem; color: var(--ink); margin-bottom: 4px; }
-  .merch-price { color: var(--green-deep); font-weight: 700; margin-bottom: 14px; }
-  .merch-info .btn { width: 100%; text-align: center; padding: 11px; font-size: 0.92rem; }
+  .lightbox-nav:hover { background: var(--green); color: var(--white); }
+  .lightbox-prev { left: 18px; }
+  .lightbox-next { right: 18px; }
 
-  /* ---------- Contact ---------- */
+  /* EPK Section */
+  .epk-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-top: 32px;
+  }
+  .epk-card {
+    border: 2.5px solid var(--line);
+    background: var(--white);
+    padding: 24px;
+    border-radius: 4px;
+  }
+  .epk-card h3 {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: var(--ink);
+    margin-bottom: 12px;
+  }
+  .epk-card p {
+    font-size: 0.92rem;
+    color: var(--ink-soft);
+    margin-bottom: 16px;
+  }
+  .epk-specs {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 16px;
+  }
+  .epk-specs li {
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+    padding: 6px 0;
+    border-bottom: 1px solid var(--paper-alt);
+  }
+  .epk-specs li:last-child { border-bottom: none; }
+  .epk-specs strong { color: var(--green-deep); }
+
+  /* Contact */
   .contact-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -466,16 +824,21 @@
     font-family: var(--font-body);
     font-size: 0.98rem;
     border-radius: 3px;
+    transition: border-color 0.15s ease;
   }
   .field input:focus, .field textarea:focus, .field select:focus {
     outline: none;
     border-color: var(--green);
   }
   .field textarea { resize: vertical; min-height: 110px; }
-  .contact-info h3 { font-family: var(--font-body); font-weight: 700; color: var(--ink); font-size: 1.1rem; margin-bottom: 10px; }
+  .contact-info h3 {
+    font-family: var(--font-body);
+    font-weight: 700;
+    color: var(--ink);
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+  }
   .contact-info .info-block { margin-bottom: 30px; }
-  .contact-info a.plain { color: var(--green-deep); text-decoration: none; font-weight: 700; }
-  .contact-info a.plain:hover { text-decoration: underline; }
   .social-row { display: flex; gap: 14px; margin-top: 10px; }
   .social-row a {
     border: 2px solid var(--line);
@@ -483,20 +846,32 @@
     width: 40px; height: 40px;
     display: flex; align-items: center; justify-content: center;
     text-decoration: none;
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: var(--ink);
+    overflow: hidden;
+    transition: transform 0.15s ease, opacity 0.15s ease;
   }
-  .social-row a:hover { background: var(--ink); color: var(--paper); }
-  .form-note { font-size: 0.85rem; color: var(--green-deep); font-weight: 600; margin-top: 6px; display: none; }
+  .social-row a img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .social-row a:hover { transform: translateY(-2px); opacity: 0.85; }
+  .form-note {
+    font-size: 0.85rem;
+    color: var(--green-deep);
+    font-weight: 600;
+    margin-top: 10px;
+    display: none;
+  }
   .form-note.show { display: block; }
+  .form-note.form-error { color: #a3271f; }
 
-  /* ---------- Footer ---------- */
+  /* Footer */
   footer {
     padding: 36px 0;
     text-align: center;
     color: var(--ink-soft);
     font-size: 0.85rem;
+    border-top: 3px solid var(--line);
   }
   footer .wrap {
     display: flex;
@@ -504,8 +879,14 @@
     align-items: center;
     gap: 10px;
   }
+  footer a {
+    color: var(--green-deep);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  footer a:hover { text-decoration: underline; }
 
-  /* ---------- Responsive ---------- */
+  /* Responsive */
   @media (max-width: 860px) {
     .nav-links { display: none; }
     .nav-toggle { display: inline-block; }
@@ -517,36 +898,47 @@
       flex-direction: column;
       gap: 0;
       border-bottom: 3px solid var(--line);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.08);
     }
-    .nav-links.open a { padding: 16px 28px; border-bottom: 2px solid var(--line); width: 100%; }
-
+    .nav-links.open a {
+      padding: 16px 28px;
+      border-bottom: 2px solid var(--line);
+      width: 100%;
+    }
     .hero .wrap { grid-template-columns: 1fr; text-align: left; }
     .hero-mark { justify-self: center; width: 190px; order: -1; }
-
-    .bio-grid { grid-template-columns: 1fr; }
-    .members { grid-template-columns: 1fr 1fr; }
     .meet-band-grid { grid-template-columns: 1fr; }
-
     .gallery-grid { grid-template-columns: repeat(2, 1fr); }
     .gallery-grid .g-item:nth-child(3n+2) { aspect-ratio: 1; }
-
-    .merch-grid { grid-template-columns: 1fr 1fr; }
     .contact-grid { grid-template-columns: 1fr; }
     .track { grid-template-columns: 40px 1fr auto; }
     .track-tag { display: none; }
     section { padding: 64px 0; }
+    .lightbox-nav { width: 40px; height: 40px; font-size: 1.3rem; }
+    .lightbox-prev { left: 10px; }
+    .lightbox-next { right: 10px; }
   }
 
   @media (max-width: 520px) {
-    .members { grid-template-columns: 1fr; }
-    .merch-grid { grid-template-columns: 1fr; }
-    .show-row { grid-template-columns: 70px 1fr; }
-    .show-status { grid-column: 1 / -1; justify-self: start; margin-top: 10px; }
+    .calendar-header {
+      grid-template-columns: 42px 1fr 42px;
+      padding: 14px 12px;
+    }
+    .calendar-nav { width: 36px; height: 36px; font-size: 1.5rem; }
+    .calendar-weekdays span { font-size: 0.68rem; padding: 8px 2px; }
+    .calendar-day { min-height: 68px; padding: 5px; }
+    .calendar-day-number { width: 25px; height: 25px; font-size: 0.82rem; }
+    .calendar-dot { margin-top: 4px; padding: 3px 4px; font-size: 0.62rem; }
+    .repertoire-list { grid-template-columns: 1fr; }
+    .repertoire-list li:nth-child(-n+2) { border-top: 2px solid var(--line); }
+    .repertoire-list li:first-child { border-top: none; }
+    .gallery-grid { grid-template-columns: 1fr; }
   }
 
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
     * { transition: none !important; }
+    .visualizer-bar { animation: none !important; }
   }
 
   :focus-visible {
@@ -557,80 +949,85 @@
 </head>
 <body>
 
+<a class="skip-link" href="#main">Skip to content</a>
+
 <header>
-  <nav class="nav">
-    <a href="#top" class="nav-mark"><img src="wordmark.png" alt="Vodou"></a>
+  <nav class="nav" aria-label="Main">
+    <a href="#top" class="nav-mark"><img src="wordmark.png" alt="Vodou" width="140" height="34"></a>
     <ul class="nav-links" id="navLinks">
+      <li><a href="#bio">Bio</a></li>
       <li><a href="#music">Music</a></li>
       <li><a href="#shows">Shows</a></li>
-      <li><a href="#bio">Bio</a></li>
       <li><a href="#gallery">Gallery</a></li>
+      <li><a href="#epk">EPK</a></li>
       <li><a href="#contact">Contact</a></li>
     </ul>
-    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="navLinks">☰</button>
   </nav>
 </header>
 
+<main id="main">
 <section class="hero" id="top">
   <div class="wrap">
     <div>
+      <h1 class="visually-hidden">Vodou — Live Funk, Rock &amp; Soul band, Lehighton, PA</h1>
       <span class="eyebrow">Funk · Rock · Soul & Much More</span>
-      <img src="wordmark.png" alt="Vodou" class="hero-wordmark">
-      <p class="lede">Seven-piece band. Funk, rock, soul, and more; built for the stage.</p>
+      <img src="wordmark.png" alt="Vodou" class="hero-wordmark" width="460" height="auto">
+      <p class="lede">Eight-piece band. Funk, rock, soul, and more — built for the stage.</p>
       <div class="btn-row">
         <a href="#music" class="btn btn-solid">Listen now</a>
         <a href="#shows" class="btn btn-outline">See upcoming shows</a>
       </div>
     </div>
-    <img src="eye-mark.png" alt="Vodou eye mark" class="hero-mark">
+    <img src="eye-mark.png" alt="" class="hero-mark" width="300" height="auto" role="presentation">
   </div>
 </section>
 
 <section id="bio">
   <div class="wrap">
-    <img src="band-live-musikfest.jpg" alt="Vodou performing live on stage at Musikfest" class="bio-photo">
+    <img src="band-live-musikfest.jpg" alt="Vodou performing live on stage at Musikfest" class="bio-photo" loading="lazy" width="1289" height="713">
     <p class="bio-photo-caption">Live at Musikfest</p>
-    <div class="bio-grid">
     <div class="bio-copy">
       <div class="sec-head" style="margin-bottom:20px;">
         <h2>The band</h2>
       </div>
-      <p>Vodou is a seven-piece band that lives for the stage located in Lehighton, PA. We play funk, rock, soul, and whatever else the night calls for! Rooted in the spirit of the ’70s, but open to every genre, we play for the love of it and for the people in the room.</p>
+      <p>Vodou is an eight-piece band that lives for the stage, based in Lehighton, PA. We play funk, rock, soul, and whatever else the night calls for. Rooted in the spirit of the ’70s but open to almost every genre, we play for the love of it and for the people in the room.</p>
 
       <details class="history-dropdown">
         <summary>How we got here</summary>
         <ul class="history-list">
-          <li><strong>2023</strong> — We began as Quantum Trebuchet, a small experimental group with guitar (Jed), bass (Zane), drums (Kian), and a different vocalist. A new guitarist stepped in as Jed had to step out, and we played two gigs at our local high school. We then split due to school and work.</li>
-          <li><strong>2025</strong> — Jed, Zane, and Kian reformed, and went through the names Blue Voodoo and Voodoo before landing on Vodou. We added keys (Aiden), current vocals (Rowan), and brass. We played Weisstock, a high school open house and an acoustic open gig. We began finding our live sound through covers.</li>
+          <li><strong>2023</strong> — We began as Quantum Trebuchet, a small experimental group with guitar (Jed), bass (Zane), drums (Kian), and a different vocalist. New guitarists came in as Jed had to step out. We then played two gigs at CCTI's student talent show. We then split due to school and work.</li>
+          <li><strong>2025</strong> — Jed, Zane, and Kian reformed, and went through the names Blue Voodoo and Voodoo before landing on Vodou. We added keys (Aiden), current vocals (Rowan), and Horns. We played Weisstock, CCTI's open house and an acoustic open gig. We began finding our live sound through covers.</li>
           <li><strong>2026</strong> — We returned to Weisstock for a second year and played Musikfest after being accepted via the ArtsQuest Industry Conference. We started writing originals (still in progress) and plan to get an album out soon!</li>
         </ul>
       </details>
-    </div>
     </div>
 
     <div class="meet-band">
       <div class="sec-head" style="margin-bottom: 28px;">
         <h2>Meet the band</h2>
-        <p class="sec-note">Click on a name to see who's who.</p>
+        <p class="sec-note">Click or hover a name to zoom in and meet them.</p>
       </div>
       <div class="meet-band-grid">
         <div class="band-photo-frame">
-          <img src="band-group.jpg" alt="Vodou band members" id="bandPhoto">
+          <img src="band-group.jpg" alt="Vodou band members" id="bandPhoto" loading="lazy">
+          <div class="photo-tooltip" id="photoTooltip">Member Name</div>
         </div>
         <div class="member-panel">
-          <div class="member-picker" id="memberPicker">
-            <button class="member-btn" data-member="eli">Eli</button>
-            <button class="member-btn" data-member="jed">Jed</button>
-            <button class="member-btn" data-member="aiden">Aiden</button>
-            <button class="member-btn" data-member="rowan">Rowan</button>
-            <button class="member-btn" data-member="zane">Zane</button>
-            <button class="member-btn" data-member="kian">Kian</button>
-            <button class="member-btn" data-member="carson">Carson</button>
+          <div class="member-picker" id="memberPicker" role="group" aria-label="Band members">
+            <button class="member-btn" data-member="eli" type="button">Eli</button>
+            <button class="member-btn" data-member="jed" type="button">Jed</button>
+            <button class="member-btn" data-member="aiden" type="button">Aiden</button>
+            <button class="member-btn" data-member="rowan" type="button">Rowan</button>
+            <button class="member-btn" data-member="zane" type="button">Zane</button>
+            <button class="member-btn" data-member="kian" type="button">Kian</button>
+            <button class="member-btn" data-member="carson" type="button">Carson</button>
+            <button class="member-btn" data-member="nolan" type="button">Nolan</button>
           </div>
-          <div class="member-card" id="memberCard">
+          <div class="member-card" id="memberCard" aria-live="polite">
             <h3 id="memberCardName">Pick a member</h3>
             <div class="member-role" id="memberCardRole">&nbsp;</div>
-            <p id="memberCardBio">Click any name above to meet them.</p>
+            <p id="memberCardBio">Click or hover any name above to meet them.</p>
           </div>
         </div>
       </div>
@@ -642,47 +1039,98 @@
   <div class="wrap">
     <div class="sec-head">
       <h2>Music</h2>
-      <p class="sec-note">Live clips for now. Originals are in the works and will land here once we're finished!</p>
+      <p class="sec-note">Live clips for now. Originals are in the works and will land here once we're finished.</p>
     </div>
-    <div class="track-list">
-      <div class="track">
-        <button class="track-play" aria-label="Play" data-src="IMG_1392.mp3">▶</button>
-        <div class="track-title">Listen to the Music <small>Doobie Brothers cover · Live at Weisstock, 9/5/26</small></div>
+    <div class="track-list" role="list">
+      <div class="track" role="listitem">
+        <button class="track-play" aria-label="Play Listen to the Music" data-src="IMG_1392.mp3" type="button">▶</button>
+        <div class="track-title">
+          <div class="track-title-head">
+            <span>Listen to the Music</span>
+            <div class="visualizer" aria-hidden="true">
+              <span class="visualizer-bar"></span>
+              <span class="visualizer-bar"></span>
+              <span class="visualizer-bar"></span>
+            </div>
+          </div>
+          <small>Doobie Brothers cover · Live at Weisstock, 9/5/26</small>
+        </div>
         <span class="track-tag">Cover</span>
         <span class="track-len">0:35</span>
+        <div class="track-progress" aria-label="Audio progress bar" role="slider" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"><div class="track-progress-bar"></div></div>
       </div>
-      <div class="track">
-        <button class="track-play" aria-label="Play" data-src="IMG_0699.mp3">▶</button>
-        <div class="track-title">25 or 6 to 4 <small>Chicago cover · Live at Musikfest, 8/3/26</small></div>
+      <div class="track" role="listitem">
+        <button class="track-play" aria-label="Play 25 or 6 to 4" data-src="IMG_0699.mp3" type="button">▶</button>
+        <div class="track-title">
+          <div class="track-title-head">
+            <span>25 or 6 to 4</span>
+            <div class="visualizer" aria-hidden="true">
+              <span class="visualizer-bar"></span>
+              <span class="visualizer-bar"></span>
+              <span class="visualizer-bar"></span>
+            </div>
+          </div>
+          <small>Chicago cover · Live at Musikfest, 8/3/26</small>
+        </div>
         <span class="track-tag">Cover</span>
         <span class="track-len">0:26</span>
+        <div class="track-progress" aria-label="Audio progress bar" role="slider" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"><div class="track-progress-bar"></div></div>
       </div>
     </div>
     <audio id="trackAudio" preload="metadata"></audio>
+
+    <details class="history-dropdown repertoire-dropdown">
+      <summary>Full repertoire</summary>
+      <ul class="repertoire-list">
+        <li>Hard to Handle <span class="repertoire-artist">The Black Crowes</span></li>
+        <li>I'll Never Let You Go <span class="repertoire-tag repertoire-tag-original">Original</span> <span class="repertoire-artist">Vodou</span></li>
+        <li>White Rabbit <span class="repertoire-artist">Jefferson Airplane</span></li>
+        <li>Fly Like an Eagle <span class="repertoire-artist">Steve Miller Band</span></li>
+        <li>Pretzel Logic <span class="repertoire-artist">Steely Dan</span></li>
+        <li>Time <span class="repertoire-artist">Pink Floyd</span></li>
+        <li>9 to 5 <span class="repertoire-artist">Dolly Parton</span></li>
+        <li>Space Oddity <span class="repertoire-artist">David Bowie</span></li>
+        <li>A Horse with No Name <span class="repertoire-artist">America</span></li>
+        <li>Cortez the Killer <span class="repertoire-tag">Jam song</span> <span class="repertoire-artist">Neil Young</span></li>
+        <li>Sin's a Good Man's Brother <span class="repertoire-artist">Grand Funk Railroad</span></li>
+        <li>Pump It Up <span class="repertoire-artist">Elvis Costello</span></li>
+        <li>Scarlet Begonias <span class="repertoire-artist">Grateful Dead</span></li>
+        <li>Fire on the Mountain <span class="repertoire-artist">Grateful Dead</span></li>
+        <li>Work to Do <span class="repertoire-artist">The Isley Brothers</span></li>
+        <li>Superstition <span class="repertoire-artist">Stevie Wonder</span></li>
+        <li>Walking on Sunshine <span class="repertoire-artist">Katrina and the Waves</span></li>
+        <li>House of the Rising Sun <span class="repertoire-artist">The Animals</span></li>
+        <li>So Long <span class="repertoire-tag repertoire-tag-original">Original</span> <span class="repertoire-artist">Vodou</span></li>
+        <li>25 or 6 to 4 <span class="repertoire-artist">Chicago</span></li>
+        <li>Listen to the Music <span class="repertoire-artist">The Doobie Brothers</span></li>
+        <li class="repertoire-more">More to come…</li>
+      </ul>
+    </details>
   </div>
 </section>
 
 <section id="shows">
   <div class="wrap">
     <div class="sec-head">
-      <h2>Upcoming shows</h2>
-      <p class="sec-note">Dates get added as we get booked. Check back often!</p>
+      <h2>Shows</h2>
+      <p class="sec-note">Dates get added as we get booked. Click a date to see what's happening.</p>
     </div>
-    <div class="show-list">
-      <div class="show-row">
-        <div class="show-date">26<small>SEP</small></div>
-        <div class="show-venue">Lehighton 250th Anniversary Parade <span>On the Vodou float · 1:00 PM · Lehighton, PA</span></div>
-        <span class="show-status info">Public event</span>
+
+    <div class="calendar-wrap">
+      <div class="calendar-header">
+        <button class="calendar-nav" id="prevMonth" aria-label="Previous month" type="button">‹</button>
+        <h3 id="calendarTitle">September 2026</h3>
+        <button class="calendar-nav" id="nextMonth" aria-label="Next month" type="button">›</button>
       </div>
-      <div class="show-row">
-        <div class="show-date">10<small>OCT</small></div>
-        <div class="show-venue">Yenser's Tree Farm <span>Time TBD · Lehighton, PA</span></div>
-        <a href="#contact" class="show-status">Details</a>
+
+      <div class="calendar-weekdays" aria-hidden="true">
+        <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span>
+        <span>Thu</span><span>Fri</span><span>Sat</span>
       </div>
-      <div class="show-row">
-        <div class="show-date">17<small>OCT</small></div>
-        <div class="show-venue">TBD: East Penn Sporting Club <span>Lehighton, PA</span></div>
-        <a href="#contact" class="show-status">Tickets</a>
+      <div class="calendar-grid" id="calendarGrid" role="grid" aria-labelledby="calendarTitle"></div>
+
+      <div class="calendar-event" id="calendarEvent" aria-live="polite">
+        <div class="calendar-event-empty">Select a show date to see details.</div>
       </div>
     </div>
   </div>
@@ -692,15 +1140,65 @@
   <div class="wrap">
     <div class="sec-head">
       <h2>Gallery</h2>
-      <p class="sec-note">Practice rooms; photos from our instagram.</p>
+      <p class="sec-note">Practice rooms, gear, and photos from our Instagram. Click any photo to enlarge.</p>
     </div>
-    <div class="gallery-grid">
-      <div class="g-item"><img src="IMG_5929.jpeg" alt="Aiden on keys and Kian on drums at practice"></div>
-      <div class="g-item"><img src="gallery-keys.jpg" alt="Vintage keyboard rig, close up"></div>
-      <div class="g-item"><img src="gallery-guitar-rig.jpg" alt="Guitar and amp rig backline"></div>
-      <div class="g-item"><img src="gallery-slide-guitar.jpg" alt="Slide guitar close up"></div>
-      <div class="g-item"><img src="gallery-practice-1.jpg" alt="Jed and Zane playing guitar and bass at practice"></div>
-      <div class="g-item"><img src="gallery-practice-2.jpg" alt="Kian on drums at band practice"></div>
+    <div class="gallery-grid" id="galleryGrid">
+      <button class="g-item" type="button" data-full="IMG_5929.jpeg" aria-label="View larger: Aiden on keys and Kian on drums at practice">
+        <img src="IMG_5929.jpeg" alt="Aiden on keys and Kian on drums at practice" loading="lazy">
+      </button>
+      <button class="g-item" type="button" data-full="gallery-keys.jpg" aria-label="View larger: Vintage keyboard rig, close up">
+        <img src="gallery-keys.jpg" alt="Vintage keyboard rig, close up" loading="lazy">
+      </button>
+      <button class="g-item" type="button" data-full="gallery-guitar-rig.jpg" aria-label="View larger: Guitar and amp rig backline">
+        <img src="gallery-guitar-rig.jpg" alt="Guitar and amp rig backline" loading="lazy">
+      </button>
+      <button class="g-item" type="button" data-full="gallery-slide-guitar.jpg" aria-label="View larger: Slide guitar close up">
+        <img src="gallery-slide-guitar.jpg" alt="Slide guitar close up" loading="lazy">
+      </button>
+      <button class="g-item" type="button" data-full="gallery-practice-1.jpg" aria-label="View larger: Jed and Zane playing guitar and bass at practice">
+        <img src="gallery-practice-1.jpg" alt="Jed and Zane playing guitar and bass at practice" loading="lazy">
+      </button>
+      <button class="g-item" type="button" data-full="gallery-practice-2.jpg" aria-label="View larger: Kian on drums at band practice">
+        <img src="gallery-practice-2.jpg" alt="Kian on drums at band practice" loading="lazy">
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- EPK Section -->
+<section id="epk">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Press Kit (EPK)</h2>
+      <p class="sec-note">Resources and technical information for talent buyers, venue managers, and press.</p>
+    </div>
+
+    <div class="epk-grid">
+      <div class="epk-card">
+        <h3>Promoter Bio</h3>
+        <p>Vodou is an 8-piece high-energy funk, rock, and soul band based in Lehighton, PA. Featuring a full horn section, tight rhythm section, and dynamic lead vocals, Vodou delivers hard-hitting live performances spanning 70s rock classics, funk grooves, and original material.</p>
+        <a href="wordmark.png" download class="btn btn-outline btn-sm">Download Official Wordmark</a>
+      </div>
+
+      <div class="epk-card">
+        <h3>Stage & Tech Requirements</h3>
+        <ul class="epk-specs">
+          <li><strong>Members:</strong> 8-piece band</li>
+          <li><strong>Inputs:</strong> Vocals (1), Guitars (1), Bass (1), Keys (1), Drums (Microphone set), Horns (3)</li>
+          <li><strong>Power:</strong> Minimum 2 dedicated 15A circuits near stage</li>
+          <li><strong>Monitors:</strong> 3–4 monitor wedges preferred</li>
+        </ul>
+        <a href="#contact" class="btn btn-solid btn-sm">Inquire for Booking</a>
+      </div>
+
+      <div class="epk-card">
+        <h3>Media Assets</h3>
+        <p>High-resolution stage photography and promo graphics suitable for event flyers, print, and digital marketing.</p>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <a href="band-live-musikfest.jpg" download class="btn btn-outline btn-sm">Download Live Photo</a>
+          <a href="band-group.jpg" download class="btn btn-outline btn-sm">Download Group Photo</a>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -711,19 +1209,26 @@
       <div class="sec-head" style="margin-bottom:24px;">
         <h2>Get in touch</h2>
       </div>
-      <form id="contactForm">
+      <form id="contactForm" action="https://api.web3forms.com/submit" method="POST" novalidate>
+        <input type="hidden" name="access_key" value="813bdea2-05fb-496c-86c6-99ebacd5b551">
+        <input type="hidden" name="subject" value="New message from the Vodou website">
         <div class="field">
           <label for="name">Name</label>
-          <input type="text" id="name" name="name" required>
+          <input type="text" id="name" name="name" required autocomplete="name">
         </div>
         <div class="field">
           <label for="email">Email</label>
-          <input type="email" id="email" name="email" required>
+          <input type="email" id="email" name="email" required autocomplete="email">
+        </div>
+        <div class="field">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" name="phone" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" maxlength="12" required autocomplete="tel">
         </div>
         <div class="field">
           <label for="reason">This is about</label>
           <select id="reason" name="reason">
             <option>Booking a show</option>
+            <option>Question about a show</option>
             <option>Press / interview</option>
             <option>Just saying hi</option>
             <option>Something else</option>
@@ -733,37 +1238,55 @@
           <label for="message">Message</label>
           <textarea id="message" name="message" required></textarea>
         </div>
-        <button type="submit" class="btn btn-solid">Send message</button>
-        <p class="form-note" id="formNote">Thanks! We'll get back to you soon.</p>
+        <div class="h-captcha" data-sitekey="7766a43c-003e-4f08-9978-61e06114365c" style="margin-bottom: 16px;"></div>
+        <button type="submit" class="btn btn-solid" id="contactSubmitBtn">Send message</button>
+        <p class="form-note" id="formNote" role="status">Thanks! We'll get back to you soon.</p>
+        <p class="form-note form-error" id="formError" role="alert">Something went wrong — please try again, or email us directly.</p>
       </form>
     </div>
     <div class="contact-info">
       <div class="info-block">
         <h3>Follow along</h3>
         <div class="social-row">
-          <a href="https://instagram.com/vodouofficial" aria-label="Instagram" target="_blank" rel="noopener">IG</a>
-          <a href="https://www.youtube.com/@VodouOfficial" aria-label="YouTube" target="blank" rel="noopener">YT</a>
+          <a href="https://instagram.com/vodouofficial" aria-label="Instagram" target="_blank" rel="noopener noreferrer"><img src="icon-instagram.png" alt="" width="40" height="40"></a>
+          <a href="https://www.youtube.com/@VodouOfficial" aria-label="YouTube" target="_blank" rel="noopener noreferrer"><img src="icon-youtube.png" alt="" width="40" height="40"></a>
         </div>
+      </div>
+      <div class="info-block">
+        <h3>Based in</h3>
+        <p style="margin:0; color: var(--ink-soft);">Lehighton, Pennsylvania</p>
       </div>
     </div>
   </div>
 </section>
+</main>
 
 <footer>
   <div class="wrap">
     <span>© 2026 Vodou. All rights reserved.</span>
+    <span><a href="#top">Back to top</a></span>
   </div>
 </footer>
 
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Image viewer" hidden>
+  <button class="lightbox-close" id="lightboxClose" aria-label="Close" type="button">×</button>
+  <button class="lightbox-nav lightbox-prev" id="lightboxPrev" aria-label="Previous image" type="button">‹</button>
+  <img id="lightboxImg" src="" alt="">
+  <button class="lightbox-nav lightbox-next" id="lightboxNext" aria-label="Next image" type="button">›</button>
+</div>
+
 <script>
+  /* ---------- Members ---------- */
   const MEMBERS = {
-    eli:   { name: 'Eli',   role: 'Tenor & bari sax', bio: 'Punches through the horn line and keeps the low reeds honest.', x: 20.6, y: 31.1, scale: 8.5 },
-    jed:   { name: 'Jed',   role: 'Guitar',           bio: 'Rhythm, leads, and the occasional wah-drenched solo.',          x: 30.3, y: 32.3, scale: 9 },
-    aiden: { name: 'Aiden', role: 'Keys',             bio: 'Organ, clav, and whatever texture the song needs.',            x: 40.8, y: 28.1, scale: 8.5 },
-    rowan: { name: 'Rowan', role: 'Lead vocals',      bio: 'Fronts the band and carries the harmonies home.',              x: 50.7, y: 40.2, scale: 8.5 },
-    zane:  { name: 'Zane',  role: 'Bass',             bio: 'Bassist, connoisseur of assorted cutlery',           x: 66.2, y: 35.7, scale: 7.5 },
-    kian:  { name: 'Kian',  role: 'Drum kit',         bio: 'Sets the pocket the whole band lives in.',                    x: 79.4, y: 26.4, scale: 7 },
-    carson:{ name: 'Carson',role: 'Trumpet',          bio: 'Rounds out the horn section — photo coming soon.',            photo: false },
+    eli:   { name: 'Eli',   role: 'Tenor & bari sax', bio: 'Saxophone, trying to experiment with different styles and playing with Vodou.', src: 'band-group.jpg', x: 20.6, y: 31.1, scale: 4.5 },
+    jed:   { name: 'Jed',   role: 'Guitar',           bio: 'Guitar, jams with Vodou and another band called 7th and Mahoning.',          src: 'band-group.jpg', x: 30.3, y: 32.3, scale: 5 },
+    aiden: { name: 'Aiden', role: 'Keys',             bio: 'Organ, clav, and whatever texture the song needs.',            src: 'band-group.jpg', x: 40.8, y: 28.1, scale: 4.5 },
+    rowan: { name: 'Rowan', role: 'Lead vocals',      bio: 'Vocals, musical theatre student at DeSales University.',              src: 'band-group.jpg', x: 50.7, y: 40.2, scale: 4.5 },
+    zane:  { name: 'Zane',  role: 'Bass',             bio: 'Bassist, connoisseur of assorted cutlery.',           src: 'band-group.jpg', x: 66.2, y: 35.7, scale: 4.5 },
+    kian:  { name: 'Kian',  role: 'Drum kit',         bio: 'Drummer, brain while drumming identical to a washing machine on the spin cycle.', src: 'band-group.jpg', x: 79.4, y: 26.4, scale: 4 },
+    carson:{ name: 'Carson',role: 'Trumpet',          bio: 'Trumpet, likes to compose in his free time and hang out with dogs.', src: 'band-live-musikfest.jpg', x: 8.9, y: 45.2, scale: 3.5 },
+    nolan: { name: 'Nolan', role: 'Trombone',         bio: 'Brings the low brass to the horn line.',    src: 'band-live-musikfest-2.jpg', x: 12.6, y: 63.0, scale: 4.5 },
   };
 
   const bandPhoto = document.getElementById('bandPhoto');
@@ -771,25 +1294,41 @@
   const cardRole = document.getElementById('memberCardRole');
   const cardBio = document.getElementById('memberCardBio');
   const memberButtons = document.querySelectorAll('.member-btn');
+  const photoTooltip = document.getElementById('photoTooltip');
+
+  function updateMember(key) {
+    const m = MEMBERS[key];
+    if (!m) return;
+    
+    memberButtons.forEach(b => {
+      const isMatch = b.dataset.member === key;
+      b.classList.toggle('active', isMatch);
+      b.setAttribute('aria-pressed', isMatch ? 'true' : 'false');
+    });
+
+    if (!bandPhoto.src.endsWith(m.src)) {
+      bandPhoto.src = m.src;
+      bandPhoto.alt = m.src === 'band-live-musikfest.jpg' || m.src === 'band-live-musikfest-2.jpg'
+        ? 'Vodou performing live at Musikfest'
+        : 'Vodou band members';
+    }
+    
+    bandPhoto.style.transformOrigin = `${m.x}% ${m.y}%`;
+    bandPhoto.style.transform = `scale(${m.scale})`;
+    cardName.textContent = m.name;
+    cardRole.textContent = m.role;
+    cardBio.textContent = m.bio;
+
+    photoTooltip.textContent = `${m.name} — ${m.role}`;
+    photoTooltip.classList.add('visible');
+  }
 
   memberButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const m = MEMBERS[btn.dataset.member];
-      if (!m) return;
-      memberButtons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      if (m.photo === false) {
-        bandPhoto.style.transformOrigin = '50% 40%';
-        bandPhoto.style.transform = 'scale(1)';
-      } else {
-        bandPhoto.style.transformOrigin = `${m.x}% ${m.y}%`;
-        bandPhoto.style.transform = `scale(${m.scale})`;
-      }
-      cardName.textContent = m.name;
-      cardRole.textContent = m.role;
-      cardBio.textContent = m.bio;
-    });
+    btn.addEventListener('click', () => updateMember(btn.dataset.member));
+    btn.addEventListener('mouseenter', () => updateMember(btn.dataset.member));
   });
+
+  /* ---------- Nav ---------- */
   const navToggle = document.getElementById('navToggle');
   const navLinks = document.getElementById('navLinks');
   navToggle.addEventListener('click', () => {
@@ -803,45 +1342,466 @@
     });
   });
 
-  const form = document.getElementById('contactForm');
-  const note = document.getElementById('formNote');
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    note.classList.add('show');
-    form.reset();
+  /* Active section highlighting */
+  const sections = document.querySelectorAll('section[id]');
+  const navAnchors = document.querySelectorAll('.nav-links a');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        navAnchors.forEach(a => {
+          a.classList.toggle('active', a.getAttribute('href') === `#${id}`);
+        });
+      }
+    });
+  }, { rootMargin: '-40% 0px -50% 0px', threshold: 0 });
+  sections.forEach(s => observer.observe(s));
+
+  /* ---------- Shows calendar ---------- */
+  const SHOWS = {
+    '2026-08-03': {
+      title: 'Musikfest',
+      details: '1:00–1:40 PM · Plaza Tropical · Bethlehem, PA',
+      locationQuery: 'Plaza Tropical, Bethlehem, PA',
+      status: 'Past event',
+      past: true
+    },
+    '2026-09-05': {
+      title: 'Weisstock',
+      details: '5:00–7:00 PM · Lehighton, PA',
+      locationQuery: 'Lehighton, PA',
+      status: 'Past event',
+      past: true
+    },
+    '2026-09-26': {
+      title: 'Lehighton 250th Anniversary Parade',
+      details: '1:00 PM · Lehighton, PA · On the Vodou float',
+      locationQuery: 'Lehighton, PA',
+      status: 'Public event'
+    },
+    '2026-10-10': {
+      title: "Yenser's Tree Farm",
+      details: 'Time TBD · Lehighton, PA',
+      locationQuery: "Yenser's Tree Farm, Lehighton, PA",
+      status: 'Contact us for details'
+    },
+    '2026-10-17': {
+      title: 'East Penn Sporting Club',
+      details: 'Time TBD · Lehighton, PA',
+      locationQuery: 'East Penn Sporting Club, Lehighton, PA',
+      status: 'Contact us for details'
+    }
+  };
+
+  const calendarGrid = document.getElementById('calendarGrid');
+  const calendarTitle = document.getElementById('calendarTitle');
+  const calendarEvent = document.getElementById('calendarEvent');
+  const prevMonth = document.getElementById('prevMonth');
+  const nextMonth = document.getElementById('nextMonth');
+
+  let calendarDate = new Date(2026, 8, 1);
+  let selectedShow = null;
+
+  function pad(n) {
+    return String(n).padStart(2, '0');
+  }
+
+  function dateKey(year, month, day) {
+    return `${year}-${pad(month + 1)}-${pad(day)}`;
+  }
+
+  function icsDate(key) {
+    // All-day-ish fallback event (start of the date, UTC) since exact set times vary/are TBD.
+    return key.replace(/-/g, '') + 'T120000Z';
+  }
+
+  function buildGoogleCalUrl(key, show) {
+    const start = icsDate(key);
+    const endDate = new Date(`${key}T12:00:00Z`);
+    endDate.setUTCHours(endDate.getUTCHours() + 2);
+    const end = endDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    const params = new URLSearchParams({
+      action: 'TEMPLATE',
+      text: `Vodou — ${show.title}`,
+      dates: `${start}/${end}`,
+      details: show.details,
+      location: show.locationQuery
+    });
+    return `https://calendar.google.com/calendar/render?${params.toString()}`;
+  }
+
+  function downloadIcs(key, show) {
+    const start = icsDate(key);
+    const endDate = new Date(`${key}T12:00:00Z`);
+    endDate.setUTCHours(endDate.getUTCHours() + 2);
+    const end = endDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    const ics = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Vodou//Shows//EN',
+      'BEGIN:VEVENT',
+      `UID:${key}-vodou@vodouband.com`,
+      `DTSTAMP:${icsDate(key)}`,
+      `DTSTART:${start}`,
+      `DTEND:${end}`,
+      `SUMMARY:Vodou — ${show.title}`,
+      `DESCRIPTION:${show.details}`,
+      `LOCATION:${show.locationQuery}`,
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].join('\r\n');
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `vodou-${key}.ics`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function renderEvent(key) {
+    const show = SHOWS[key];
+    if (!show) {
+      calendarEvent.innerHTML = '<div class="calendar-event-empty">Select a show date to see details.</div>';
+      return;
+    }
+    const date = new Date(`${key}T12:00:00`);
+    const formattedDate = date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
+    
+    const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(show.locationQuery)}`;
+
+    calendarEvent.innerHTML = `
+      <div>
+        <div class="calendar-event-date">${formattedDate}</div>
+        <h3>${show.title}</h3>
+        <p>${show.details}</p>
+        <span class="event-status">${show.status}</span>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <a href="${mapUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" style="margin-top:10px; display:inline-block;">Directions ↗</a>
+        ${show.past ? '' : `
+        <a href="${buildGoogleCalUrl(key, show)}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" style="margin-top:10px; display:inline-block;">Add to Google Calendar</a>
+        <button type="button" class="btn btn-outline btn-sm" style="margin-top:10px;" data-ics-key="${key}">Download .ics</button>
+        `}
+      </div>
+    `;
+
+    if (!show.past) {
+      const icsBtn = calendarEvent.querySelector('[data-ics-key]');
+      if (icsBtn) {
+        icsBtn.addEventListener('click', () => downloadIcs(key, show));
+      }
+    }
+  }
+
+  function renderCalendar() {
+    const year = calendarDate.getFullYear();
+    const month = calendarDate.getMonth();
+    calendarTitle.textContent = calendarDate.toLocaleDateString('en-US', {
+      month: 'long',
+      year: 'numeric'
+    });
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const today = new Date();
+    const todayKey = dateKey(today.getFullYear(), today.getMonth(), today.getDate());
+
+    calendarGrid.innerHTML = '';
+
+    for (let i = 0; i < firstDay; i++) {
+      const empty = document.createElement('div');
+      empty.className = 'calendar-day empty';
+      empty.setAttribute('aria-hidden', 'true');
+      calendarGrid.appendChild(empty);
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const key = dateKey(year, month, day);
+      const show = SHOWS[key];
+      const cell = document.createElement('div');
+      cell.className = 'calendar-day';
+      cell.setAttribute('role', 'gridcell');
+
+      if (key === todayKey) cell.classList.add('today');
+      if (show) {
+        cell.classList.add('has-show');
+        if (show.past) cell.classList.add('past-show');
+      }
+      if (key === selectedShow) cell.classList.add('selected');
+
+      cell.innerHTML = `<span class="calendar-day-number">${day}</span>`;
+
+      if (show) {
+        const dot = document.createElement('span');
+        dot.className = 'calendar-dot';
+        dot.textContent = show.title;
+        cell.appendChild(dot);
+        cell.setAttribute('role', 'button');
+        cell.setAttribute('tabindex', '0');
+        cell.setAttribute('aria-label', `${show.title} on ${key}`);
+        cell.setAttribute('aria-pressed', key === selectedShow ? 'true' : 'false');
+
+        const select = () => {
+          selectedShow = key;
+          renderCalendar();
+          renderEvent(key);
+        };
+        cell.addEventListener('click', select);
+        cell.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            select();
+          }
+        });
+      }
+      calendarGrid.appendChild(cell);
+    }
+
+    const totalCells = firstDay + daysInMonth;
+    const remainder = totalCells % 7;
+    if (remainder) {
+      for (let i = remainder; i < 7; i++) {
+        const empty = document.createElement('div');
+        empty.className = 'calendar-day empty';
+        empty.setAttribute('aria-hidden', 'true');
+        calendarGrid.appendChild(empty);
+      }
+    }
+  }
+
+  prevMonth.addEventListener('click', () => {
+    calendarDate.setMonth(calendarDate.getMonth() - 1);
+    selectedShow = null;
+    renderCalendar();
+    renderEvent(null);
+  });
+  nextMonth.addEventListener('click', () => {
+    calendarDate.setMonth(calendarDate.getMonth() + 1);
+    selectedShow = null;
+    renderCalendar();
+    renderEvent(null);
   });
 
+  (function initCalendar() {
+    const today = new Date();
+    const todayKey = dateKey(today.getFullYear(), today.getMonth(), today.getDate());
+    const upcoming = Object.keys(SHOWS)
+      .filter(k => !SHOWS[k].past && k >= todayKey)
+      .sort();
+    if (upcoming.length) {
+      selectedShow = upcoming[0];
+      const [y, m] = selectedShow.split('-').map(Number);
+      calendarDate = new Date(y, m - 1, 1);
+      renderCalendar();
+      renderEvent(selectedShow);
+    } else {
+      renderCalendar();
+    }
+  })();
+
+  /* ---------- Contact form ---------- */
+  const form = document.getElementById('contactForm');
+  const note = document.getElementById('formNote');
+  const errorNote = document.getElementById('formError');
+  const submitBtn = document.getElementById('contactSubmitBtn');
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    note.classList.remove('show');
+    errorNote.classList.remove('show');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending…';
+
+    const formData = new FormData(form);
+    const payload = Object.fromEntries(formData.entries());
+
+    fetch(form.action, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+      .then(res => res.json())
+      .then(data => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Send message';
+        if (data.success) {
+          note.classList.add('show');
+          form.reset();
+        } else {
+          errorNote.classList.add('show');
+        }
+      })
+      .catch(() => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Send message';
+        errorNote.classList.add('show');
+      });
+  });
+
+  /* ---------- Audio player ---------- */
   const trackAudio = document.getElementById('trackAudio');
   let currentPlayBtn = null;
+  let currentTrackEl = null;
+  let progressRAF = null;
+
+  function resetTrackProgress(trackEl) {
+    if (!trackEl) return;
+    const bar = trackEl.querySelector('.track-progress-bar');
+    if (bar) bar.style.width = '0%';
+    const progressContainer = trackEl.querySelector('.track-progress');
+    if (progressContainer) progressContainer.setAttribute('aria-valuenow', '0');
+  }
+
+  function updateProgress() {
+    if (!currentTrackEl || trackAudio.paused) return;
+    const bar = currentTrackEl.querySelector('.track-progress-bar');
+    const progressContainer = currentTrackEl.querySelector('.track-progress');
+    if (bar && trackAudio.duration) {
+      const percentage = (trackAudio.currentTime / trackAudio.duration) * 100;
+      bar.style.width = `${percentage}%`;
+      if (progressContainer) progressContainer.setAttribute('aria-valuenow', Math.round(percentage));
+    }
+    progressRAF = requestAnimationFrame(updateProgress);
+  }
+
+  document.querySelectorAll('.track-progress').forEach(progressContainer => {
+    progressContainer.addEventListener('click', (e) => {
+      const trackEl = progressContainer.closest('.track');
+      if (currentTrackEl === trackEl && trackAudio.duration) {
+        const rect = progressContainer.getBoundingClientRect();
+        const clickPosition = (e.clientX - rect.left) / rect.width;
+        trackAudio.currentTime = clickPosition * trackAudio.duration;
+        const bar = trackEl.querySelector('.track-progress-bar');
+        if (bar) bar.style.width = `${clickPosition * 100}%`;
+      }
+    });
+  });
 
   document.querySelectorAll('.track-play').forEach(btn => {
     btn.addEventListener('click', () => {
       const src = btn.dataset.src;
       if (!src) return;
+      const trackEl = btn.closest('.track');
 
-      // Same button: toggle pause/play
       if (currentPlayBtn === btn && !trackAudio.paused) {
         trackAudio.pause();
         btn.textContent = '▶';
+        btn.setAttribute('aria-label', btn.getAttribute('aria-label').replace('Pause', 'Play'));
+        if (progressRAF) cancelAnimationFrame(progressRAF);
         return;
       }
 
-      // Switch track or start new
-      document.querySelectorAll('.track-play').forEach(b => b.textContent = '▶');
+      if (currentTrackEl && currentTrackEl !== trackEl) {
+        resetTrackProgress(currentTrackEl);
+      }
+
+      document.querySelectorAll('.track-play').forEach(b => {
+        b.textContent = '▶';
+        b.setAttribute('aria-label', b.getAttribute('aria-label').replace('Pause', 'Play'));
+      });
+      document.querySelectorAll('.track').forEach(t => t.classList.remove('playing'));
+
       trackAudio.src = src;
       trackAudio.play().then(() => {
         btn.textContent = '❚❚';
+        btn.setAttribute('aria-label', btn.getAttribute('aria-label').replace('Play', 'Pause'));
         currentPlayBtn = btn;
+        currentTrackEl = trackEl;
+        trackEl.classList.add('playing');
+        updateProgress();
       }).catch(() => {
         btn.textContent = '▶';
         currentPlayBtn = null;
+        currentTrackEl = null;
       });
     });
   });
 
   trackAudio.addEventListener('ended', () => {
-    if (currentPlayBtn) currentPlayBtn.textContent = '▶';
+    if (currentPlayBtn) {
+      currentPlayBtn.textContent = '▶';
+      currentPlayBtn.setAttribute('aria-label', currentPlayBtn.getAttribute('aria-label').replace('Pause', 'Play'));
+    }
+    if (currentTrackEl) {
+      currentTrackEl.classList.remove('playing');
+      resetTrackProgress(currentTrackEl);
+    }
     currentPlayBtn = null;
+    currentTrackEl = null;
+    if (progressRAF) cancelAnimationFrame(progressRAF);
+  });
+
+  trackAudio.addEventListener('pause', () => {
+    if (progressRAF) cancelAnimationFrame(progressRAF);
+  });
+
+  /* ---------- Gallery lightbox ---------- */
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightboxImg');
+  const lightboxClose = document.getElementById('lightboxClose');
+  const lightboxPrev = document.getElementById('lightboxPrev');
+  const lightboxNext = document.getElementById('lightboxNext');
+  const galleryItems = Array.from(document.querySelectorAll('.g-item'));
+  let currentIndex = 0;
+
+  function openLightbox(index) {
+    currentIndex = index;
+    const item = galleryItems[index];
+    const full = item.dataset.full || item.querySelector('img').src;
+    const alt = item.querySelector('img').alt || '';
+    lightboxImg.src = full;
+    lightboxImg.alt = alt;
+    lightbox.hidden = false;
+    requestAnimationFrame(() => lightbox.classList.add('open'));
+    document.body.style.overflow = 'hidden';
+    lightboxClose.focus();
+  }
+
+  function closeLightbox() {
+    lightbox.classList.remove('open');
+    setTimeout(() => {
+      lightbox.hidden = true;
+      lightboxImg.src = '';
+      document.body.style.overflow = '';
+    }, 250);
+  }
+
+  function showRelative(delta) {
+    currentIndex = (currentIndex + delta + galleryItems.length) % galleryItems.length;
+    const item = galleryItems[currentIndex];
+    lightboxImg.src = item.dataset.full || item.querySelector('img').src;
+    lightboxImg.alt = item.querySelector('img').alt || '';
+  }
+
+  galleryItems.forEach((item, i) => {
+    item.addEventListener('click', () => openLightbox(i));
+  });
+
+  lightboxClose.addEventListener('click', closeLightbox);
+  lightboxPrev.addEventListener('click', () => showRelative(-1));
+  lightboxNext.addEventListener('click', () => showRelative(1));
+
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox) closeLightbox();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (!lightbox.classList.contains('open')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft') showRelative(-1);
+    if (e.key === 'ArrowRight') showRelative(1);
   });
 </script>
 
