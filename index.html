@@ -24,7 +24,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bevan&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://web3forms.com/client/script.js" async defer></script>
-<script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+<!-- hCaptcha is loaded automatically by the Web3Forms client script when data-captcha="true" is present -->
 
 <!-- Structured data so search engines can show Vodou as a band with real details -->
 <script type="application/ld+json">
@@ -1238,10 +1238,12 @@
           <label for="message">Message</label>
           <textarea id="message" name="message" required></textarea>
         </div>
-        <div class="h-captcha" data-sitekey="7766a43c-003e-4f08-9978-61e06114365c" style="margin-bottom: 16px;"></div>
+        <!-- Web3Forms free hCaptcha (zero-config). Must have data-captcha="true". -->
+        <div class="h-captcha" data-captcha="true" style="margin-bottom: 16px;"></div>
         <button type="submit" class="btn btn-solid" id="contactSubmitBtn">Send message</button>
         <p class="form-note" id="formNote" role="status">Thanks! We'll get back to you soon.</p>
         <p class="form-note form-error" id="formError" role="alert">Something went wrong — please try again, or email us directly.</p>
+        <p class="form-note form-error" id="captchaError" role="alert" style="display:none;">Please complete the captcha before sending.</p>
       </form>
     </div>
     <div class="contact-info">
@@ -1610,21 +1612,55 @@
   const form = document.getElementById('contactForm');
   const note = document.getElementById('formNote');
   const errorNote = document.getElementById('formError');
+  const captchaError = document.getElementById('captchaError');
   const submitBtn = document.getElementById('contactSubmitBtn');
+
+  function getHCaptchaResponse() {
+    // Prefer the official response field that hCaptcha injects
+    const responseField = form.querySelector('[name="h-captcha-response"]');
+    if (responseField && responseField.value && responseField.value.trim() !== '') {
+      return responseField.value.trim();
+    }
+    // Fallback for some render modes
+    const alt = form.querySelector('[name="g-recaptcha-response"]');
+    if (alt && alt.value && alt.value.trim() !== '') {
+      return alt.value.trim();
+    }
+    // Last resort: hcaptcha global API if available
+    if (typeof hcaptcha !== 'undefined' && typeof hcaptcha.getResponse === 'function') {
+      const token = hcaptcha.getResponse();
+      if (token) return token;
+    }
+    return '';
+  }
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
+
+    note.classList.remove('show');
+    errorNote.classList.remove('show');
+    if (captchaError) captchaError.style.display = 'none';
+
     if (!form.checkValidity()) {
       form.reportValidity();
       return;
     }
 
-    note.classList.remove('show');
-    errorNote.classList.remove('show');
+    const captchaToken = getHCaptchaResponse();
+    if (!captchaToken) {
+      if (captchaError) captchaError.style.display = 'block';
+      const captchaEl = form.querySelector('.h-captcha');
+      if (captchaEl) captchaEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
     submitBtn.disabled = true;
     submitBtn.textContent = 'Sending…';
 
     const formData = new FormData(form);
+    // Ensure the token is present under the name Web3Forms expects
+    formData.set('h-captcha-response', captchaToken);
+
     const payload = Object.fromEntries(formData.entries());
 
     fetch(form.action, {
@@ -1639,14 +1675,23 @@
         if (data.success) {
           note.classList.add('show');
           form.reset();
+          if (typeof hcaptcha !== 'undefined' && typeof hcaptcha.reset === 'function') {
+            try { hcaptcha.reset(); } catch (_) {}
+          }
         } else {
           errorNote.classList.add('show');
+          if (typeof hcaptcha !== 'undefined' && typeof hcaptcha.reset === 'function') {
+            try { hcaptcha.reset(); } catch (_) {}
+          }
         }
       })
       .catch(() => {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Send message';
         errorNote.classList.add('show');
+        if (typeof hcaptcha !== 'undefined' && typeof hcaptcha.reset === 'function') {
+          try { hcaptcha.reset(); } catch (_) {}
+        }
       });
   });
 
