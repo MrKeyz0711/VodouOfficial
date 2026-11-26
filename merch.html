@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Merch — Vodou Official</title>
+  <meta name="description" content="Official Vodou band merchandise. Shop tees, hoodies, and more.">
+  <meta name="theme-color" content="#128A43">
+  <link rel="canonical" href="https://vodouofficial.com/merch.html">
+  <link rel="icon" href="eye-mark.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bevan&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="merch.css">
+  <script src="merch.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <nav class="nav" aria-label="Main navigation">
+      <a class="nav-mark" href="index.html" aria-label="Vodou home">
+        <img src="wordmark.png" alt="Vodou" width="140" height="34">
+      </a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="index.html#bio">Bio</a></li>
+        <li><a href="index.html#music">Music</a></li>
+        <li><a href="index.html#shows">Shows</a></li>
+        <li><a href="index.html#gallery">Gallery</a></li>
+        <li><a href="index.html#epk">EPK</a></li>
+        <li><a href="index.html#contact">Contact</a></li>
+        <li><a class="active" href="merch.html" aria-current="page">Merch</a></li>
+      </ul>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="navLinks">☰</button>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="merch-hero">
+      <div class="wrap">
+        <p class="eyebrow">Official Vodou merchandise</p>
+        <h1>Wear the<br><span>noise.</span></h1>
+        <p class="lede">A little piece of Vodou, wherever the music takes you.</p>
+        <a class="btn btn-solid" href="#collection">Explore the collection</a>
+      </div>
+      <img class="hero-eye" src="eye-mark.png" alt="" aria-hidden="true">
+    </section>
+
+    <section class="collection wrap" id="collection">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">The collection</p>
+          <h2>Official merch</h2>
+        </div>
+        <p class="section-note">Designed by the band. Made for the people who show up.</p>
+      </div>
+
+      <div class="shop-toolbar">
+        <label class="search-label" for="productSearch">Find something</label>
+        <input id="productSearch" type="search" placeholder="Search merch…" autocomplete="off">
+        <label class="filter-label" for="categoryFilter">Category</label>
+        <select id="categoryFilter">
+          <option value="all">All merchandise</option>
+          <option value="shirt">T-shirts</option>
+          <option value="hoodie">Hoodies</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <p class="shop-status" id="shopStatus" role="status" aria-live="polite">Loading the collection…</p>
+      <div class="product-grid" id="productGrid"></div>
+      <div class="empty-state" id="emptyState" hidden>
+        <h3>Nothing here just yet.</h3>
+        <p>Try another search or category.</p>
+      </div>
+    </section>
+
+    <section class="merch-note">
+      <div class="wrap merch-note-inner">
+        <div class="note-mark">V</div>
+        <div>
+          <p class="eyebrow">Thanks for supporting independent music</p>
+          <h2>See you out there.</h2>
+          <p>Every bit of support helps keep the music moving. Thanks for being part of it.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <a href="index.html" class="footer-wordmark">VODOU</a>
+      <p>© <span id="year"></span> Vodou. All noise reserved.</p>
+      <a href="https://instagram.com/vodouofficial" target="_blank" rel="noopener noreferrer">Instagram ↗</a>
+    </div>
+  </footer>
+
+  <dialog class="product-dialog" id="productDialog" aria-labelledby="dialogTitle">
+    <button class="dialog-close" id="dialogClose" type="button" aria-label="Close product details">×</button>
+    <div class="dialog-layout">
+      <div class="dialog-image-wrap">
+        <img id="dialogImage" src="" alt="">
+      </div>
+      <div class="dialog-copy">
+        <p class="eyebrow">Vodou official merch</p>
+        <h2 id="dialogTitle"></h2>
+        <p class="dialog-description" id="dialogDescription"></p>
+        <div id="variantControls"></div>
+        <p class="price-note">Pricing and checkout are being finalized. This preview does not accept orders yet.</p>
+      </div>
+    </div>
+  </dialog>
+
+</body>
+</html>
