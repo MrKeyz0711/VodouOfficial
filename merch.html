@@ -51,7 +51,12 @@
           <p class="eyebrow">The collection</p>
           <h2>Official merch</h2>
         </div>
-        <p class="section-note">Designed by the band. Made for the people who show up.</p>
+        <div class="collection-actions">
+          <p class="section-note">Designed by the band. Made for the people who show up.</p>
+          <button class="cart-open-button" id="cartOpenButton" type="button">
+            Cart <span id="cartCount" class="cart-count">0</span>
+          </button>
+        </div>
       </div>
 
       <div class="shop-toolbar">
@@ -94,6 +99,20 @@
     </div>
   </footer>
 
+
+  <dialog class="cart-dialog" id="cartDialog" aria-labelledby="cartTitle">
+    <div class="cart-dialog-header">
+      <h2 id="cartTitle">Your cart</h2>
+      <button class="dialog-close" id="cartClose" type="button" aria-label="Close cart">×</button>
+    </div>
+    <div id="cartItems" class="cart-items"></div>
+    <div class="cart-summary">
+      <div class="cart-subtotal-row"><strong>Subtotal</strong><strong id="cartSubtotal">$0.00</strong></div>
+      <p>Shipping and taxes, if applicable, will be calculated at checkout.</p>
+      <button class="checkout-placeholder" type="button" disabled>Checkout coming next</button>
+    </div>
+  </dialog>
+
   <dialog class="product-dialog" id="productDialog" aria-labelledby="dialogTitle">
     <button class="dialog-close" id="dialogClose" type="button" aria-label="Close product details">×</button>
     <div class="dialog-layout">
@@ -105,7 +124,11 @@
         <h2 id="dialogTitle"></h2>
         <p class="dialog-description" id="dialogDescription"></p>
         <div id="variantControls"></div>
-        <p class="price-note">Pricing and checkout are being finalized. This preview does not accept orders yet.</p>
+        <p class="selected-price" id="selectedPrice" aria-live="polite"></p>
+        <label class="quantity-label" for="productQuantity">Quantity</label>
+        <input class="quantity-input" id="productQuantity" type="number" min="1" max="20" value="1">
+        <button class="add-cart-button" id="addToCartButton" type="button">Add to cart</button>
+        <p class="price-note">Your cart is saved on this device. Checkout is being added next.</p>
       </div>
     </div>
   </dialog>
