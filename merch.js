@@ -225,36 +225,52 @@
       .map(select => Number(select.value));
   }
 
-  function findSelectedVariant(product) {
-    const variants = enabledVariants(product);
+function findSelectedVariant(product) {
+  const variants = enabledVariants(product);
 
-    const singleVariantSelect =
-      variantControls.querySelector("select[data-single-variant]");
+  const selects = Array.from(
+    variantControls.querySelectorAll("select[data-option-index]")
+  );
 
-    if (singleVariantSelect) {
-      return variants.find(
-        v => String(v.id) === singleVariantSelect.value
-      ) || null;
-    }
-
-    const optionSelects = Array.from(
-      variantControls.querySelectorAll("select[data-option-index]")
-    );
-
-    if (!optionSelects.length) {
-      return variants.find(v => v.is_default) || variants[0] || null;
-    }
-
-    const ids = selectedOptionIds();
-
-    return variants.find(variant =>
-      Array.isArray(variant.options) &&
-      variant.options.length === ids.length &&
-      variant.options.every(id => ids.includes(Number(id))) &&
-      ids.every(id => variant.options.map(Number).includes(id))
-    ) || null;
+  if (!selects.length) {
+    return variants.find(v => v.is_default) || variants[0] || null;
   }
 
+  const options = product.options || [];
+
+  const selected = {};
+
+  selects.forEach(select => {
+    const index = Number(select.dataset.optionIndex);
+    const option = options[index];
+
+    if (!option) return;
+
+    selected[option.type] = Number(select.value);
+  });
+
+  return variants.find(variant => {
+    const variantIds = variant.options.map(Number);
+
+    const colorOption = options.find(o => o.type === "color");
+    const sizeOption = options.find(o => o.type === "size");
+
+    const colorId = colorOption?.values
+      .map(v => Number(v.id))
+      .find(id => variantIds.includes(id));
+
+    const sizeId = sizeOption?.values
+      .map(v => Number(v.id))
+      .find(id => variantIds.includes(id));
+
+    return (
+      selected.color === colorId &&
+      selected.size === sizeId
+    );
+  }) || null;
+}
+
+  
   function updateSelectedVariant() {
     if (!activeProduct) return;
 
