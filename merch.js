@@ -317,10 +317,19 @@
         select.id = id;
         select.dataset.optionIndex = String(index);
 
-        // Include every option value used by an enabled variant,
-        // regardless of the order Printify stores its option IDs.
+        // Only use IDs belonging to this specific product option.
+        const optionValueIds = new Set(
+          (Array.isArray(option.values) ? option.values : [])
+            .map(value => Number(value.id))
+        );
+
+        // Keep values that actually appear in enabled variants.
         const availableIds = new Set(
-          variants.flatMap(v => v.options.map(Number))
+          variants.flatMap(variant =>
+            variant.options
+              .map(Number)
+              .filter(valueId => optionValueIds.has(valueId))
+          )
         );
 
         const values = Array.isArray(option.values)
@@ -353,15 +362,18 @@
         );
 
         selects.forEach((select, index) => {
-          const matchingOption = defaultVariant.options.find(
-            id =>
-              select.querySelector(
-                `option[value="${Number(id)}"]`
-              )
+          const option = options[index];
+          const optionValueIds = new Set(
+            (Array.isArray(option.values) ? option.values : [])
+              .map(value => Number(value.id))
           );
 
-          if (matchingOption !== undefined) {
-            select.value = String(matchingOption);
+          const matchingId = defaultVariant.options
+            .map(Number)
+            .find(valueId => optionValueIds.has(valueId));
+
+          if (matchingId !== undefined) {
+            select.value = String(matchingId);
           }
         });
       }
