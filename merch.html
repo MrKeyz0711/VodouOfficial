@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,10 +13,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bevan&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="merch.css">
-  <script src="merch.js?v=3" defer></script>
+  <script src="merch.js?v=4" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
+
   <header class="site-header">
     <nav class="nav" aria-label="Main navigation">
       <a class="nav-mark" href="index.html" aria-label="Vodou home">
@@ -99,7 +101,7 @@
     </div>
   </footer>
 
-
+  <!-- SHOPPING CART -->
   <dialog class="cart-dialog" id="cartDialog" aria-labelledby="cartTitle">
     <div class="cart-dialog-header">
       <h2 id="cartTitle">Your cart</h2>
@@ -107,12 +109,128 @@
     </div>
     <div id="cartItems" class="cart-items"></div>
     <div class="cart-summary">
-      <div class="cart-subtotal-row"><strong>Subtotal</strong><strong id="cartSubtotal">$0.00</strong></div>
-      <p>Shipping and taxes, if applicable, will be calculated at checkout.</p>
-      <button class="checkout-placeholder" type="button" disabled>Checkout coming next</button>
+      <div class="cart-subtotal-row">
+        <strong>Subtotal</strong>
+        <strong id="cartSubtotal">$0.00</strong>
+      </div>
+      <p>Shipping will be calculated using your delivery address. You'll choose your preferred available shipping method before payment.</p>
+      <button class="checkout-placeholder" id="checkoutButton" type="button">Continue to checkout</button>
     </div>
   </dialog>
 
+  <!-- SHIPPING ADDRESS AND SHIPPING METHOD -->
+  <dialog class="cart-dialog" id="checkoutDialog" aria-labelledby="checkoutTitle">
+    <div class="cart-dialog-header">
+      <h2 id="checkoutTitle">Shipping details</h2>
+      <button class="dialog-close" id="checkoutClose" type="button" aria-label="Close checkout">×</button>
+    </div>
+
+    <p>Enter your delivery information to see the shipping options available for your order.</p>
+
+    <form id="shippingAddressForm">
+      <div class="variant-group">
+        <label for="shippingName">Full name</label>
+        <input class="quantity-input" style="width:100%" id="shippingName" name="name" autocomplete="name" required>
+      </div>
+
+      <div class="variant-group">
+        <label for="shippingEmail">Email address</label>
+        <input class="quantity-input" style="width:100%" id="shippingEmail" name="email" type="email" autocomplete="email" required>
+      </div>
+
+      <div class="variant-group">
+        <label for="shippingAddress1">Street address</label>
+        <input class="quantity-input" style="width:100%" id="shippingAddress1" name="address1" autocomplete="address-line1" required>
+      </div>
+
+      <div class="variant-group">
+        <label for="shippingAddress2">Apartment, suite, etc. (optional)</label>
+        <input class="quantity-input" style="width:100%" id="shippingAddress2" name="address2" autocomplete="address-line2">
+      </div>
+
+      <div class="variant-group">
+        <label for="shippingCity">City</label>
+        <input class="quantity-input" style="width:100%" id="shippingCity" name="city" autocomplete="address-level2" required>
+      </div>
+
+      <div class="variant-group">
+        <label for="shippingState">State</label>
+        <select id="shippingState" name="state" required>
+          <option value="">Choose your state</option>
+          <option value="AL">Alabama</option>
+          <option value="AK">Alaska</option>
+          <option value="AZ">Arizona</option>
+          <option value="AR">Arkansas</option>
+          <option value="CA">California</option>
+          <option value="CO">Colorado</option>
+          <option value="CT">Connecticut</option>
+          <option value="DE">Delaware</option>
+          <option value="DC">District of Columbia</option>
+          <option value="FL">Florida</option>
+          <option value="GA">Georgia</option>
+          <option value="HI">Hawaii</option>
+          <option value="ID">Idaho</option>
+          <option value="IL">Illinois</option>
+          <option value="IN">Indiana</option>
+          <option value="IA">Iowa</option>
+          <option value="KS">Kansas</option>
+          <option value="KY">Kentucky</option>
+          <option value="LA">Louisiana</option>
+          <option value="ME">Maine</option>
+          <option value="MD">Maryland</option>
+          <option value="MA">Massachusetts</option>
+          <option value="MI">Michigan</option>
+          <option value="MN">Minnesota</option>
+          <option value="MS">Mississippi</option>
+          <option value="MO">Missouri</option>
+          <option value="MT">Montana</option>
+          <option value="NE">Nebraska</option>
+          <option value="NV">Nevada</option>
+          <option value="NH">New Hampshire</option>
+          <option value="NJ">New Jersey</option>
+          <option value="NM">New Mexico</option>
+          <option value="NY">New York</option>
+          <option value="NC">North Carolina</option>
+          <option value="ND">North Dakota</option>
+          <option value="OH">Ohio</option>
+          <option value="OK">Oklahoma</option>
+          <option value="OR">Oregon</option>
+          <option value="PA">Pennsylvania</option>
+          <option value="RI">Rhode Island</option>
+          <option value="SC">South Carolina</option>
+          <option value="SD">South Dakota</option>
+          <option value="TN">Tennessee</option>
+          <option value="TX">Texas</option>
+          <option value="UT">Utah</option>
+          <option value="VT">Vermont</option>
+          <option value="VA">Virginia</option>
+          <option value="WA">Washington</option>
+          <option value="WV">West Virginia</option>
+          <option value="WI">Wisconsin</option>
+          <option value="WY">Wyoming</option>
+        </select>
+      </div>
+
+      <div class="variant-group">
+        <label for="shippingZip">ZIP code</label>
+        <input class="quantity-input" style="width:100%" id="shippingZip" name="zip" autocomplete="postal-code" inputmode="numeric" pattern="[0-9]{5}(-[0-9]{4})?" required>
+      </div>
+
+      <input type="hidden" id="shippingCountry" name="country" value="US">
+
+      <button class="add-cart-button" id="getShippingRatesButton" type="submit">Show shipping options</button>
+    </form>
+
+    <div id="shippingRatesSection" hidden>
+      <h3 style="margin:24px 0 12px">Choose your shipping</h3>
+      <p id="shippingRatesStatus" role="status" aria-live="polite"></p>
+      <div id="shippingOptions"></div>
+      <button class="add-cart-button" id="payButton" type="button" disabled>Continue to payment</button>
+      <button class="product-button" id="changeAddressButton" type="button" style="width:100%;margin-top:10px">Change address</button>
+    </div>
+  </dialog>
+
+  <!-- PRODUCT DETAILS -->
   <dialog class="product-dialog" id="productDialog" aria-labelledby="dialogTitle">
     <button class="dialog-close" id="dialogClose" type="button" aria-label="Close product details">×</button>
     <div class="dialog-layout">
@@ -129,10 +247,9 @@
         <label class="quantity-label" for="productQuantity">Quantity</label>
         <input class="quantity-input" id="productQuantity" type="number" min="1" max="20" value="1">
         <button class="add-cart-button" id="addToCartButton" type="button">Add to cart</button>
-        <p class="price-note">Your cart is saved on this device. Checkout is being added next.</p>
+        <p class="price-note">Your cart is saved on this device. Shipping is calculated at checkout.</p>
       </div>
     </div>
   </dialog>
-
 </body>
 </html>
