@@ -27,82 +27,83 @@
   const cartItemsElement = document.getElementById("cartItems");
   const cartSubtotalElement = document.getElementById("cartSubtotal");
 
- let products = [];
-let activeProduct = null;
-let activeVariant = null;
-let cart = loadCart();
+  let products = [];
+  let activeProduct = null;
+  let activeVariant = null;
+  let activeGalleryPosition = "front";
+  let cart = loadCart();
 
-const money = cents => new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD"
-}).format((Number(cents) || 0) / 100);
+  const money = cents => new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD"
+  }).format((Number(cents) || 0) / 100);
 
-const plainText = html => {
-  const node = document.createElement("div");
-  node.innerHTML = String(html || "");
-  return (node.textContent || node.innerText || "")
-    .replace(/\s+/g, " ")
-    .trim();
-};
+  const plainText = html => {
+    const node = document.createElement("div");
+    node.innerHTML = String(html || "");
+    return (node.textContent || node.innerText || "")
+      .replace(/\s+/g, " ")
+      .trim();
+  };
 
-const getGalleryImages = (product, variantId = null) => {
-  const images = Array.isArray(product.images) ? product.images : [];
+  const getGalleryImages = (product, variantId = null) => {
+    const images = Array.isArray(product.images) ? product.images : [];
 
-  const relevant = images.filter(image => {
-    if (!image || !image.src) return false;
+    const relevant = images.filter(image => {
+      if (!image || !image.src) return false;
 
-    const position = String(image.position || "").toLowerCase();
+      const position = String(image.position || "").toLowerCase();
 
-    if (position !== "front" && position !== "back") {
-      return false;
-    }
+      if (position !== "front" && position !== "back") {
+        return false;
+      }
 
-    if (
-      variantId != null &&
-      Array.isArray(image.variant_ids) &&
-      image.variant_ids.length &&
-      !image.variant_ids.map(String).includes(String(variantId))
-    ) {
-      return false;
-    }
+      if (
+        variantId != null &&
+        Array.isArray(image.variant_ids) &&
+        image.variant_ids.length &&
+        !image.variant_ids.map(String).includes(String(variantId))
+      ) {
+        return false;
+      }
 
-    return true;
-  });
-
-  const unique = [];
-  const seen = new Set();
-
-  relevant.forEach(image => {
-    if (seen.has(image.src)) return;
-    seen.add(image.src);
-
-    unique.push({
-      src: image.src,
-      position: String(image.position).toLowerCase()
+      return true;
     });
-  });
 
-  return ["front", "back"]
-    .map(position => unique.find(image => image.position === position))
-    .filter(Boolean);
-};
+    const unique = [];
+    const seen = new Set();
 
-const getImage = (product, variantId = null) => {
-  const gallery = getGalleryImages(product, variantId);
-  const front = gallery.find(image => image.position === "front");
+    relevant.forEach(image => {
+      if (seen.has(image.src)) return;
+      seen.add(image.src);
 
-  return front?.src || gallery[0]?.src || "";
-};
+      unique.push({
+        src: image.src,
+        position: String(image.position).toLowerCase()
+      });
+    });
 
-const enabledVariants = product =>
-  (Array.isArray(product.variants) ? product.variants : [])
-    .filter(v =>
-      v &&
-      v.is_enabled !== false &&
-      v.is_available !== false &&
-      Number.isFinite(Number(v.price)) &&
-      Number(v.price) >= 0
-    );
+    return ["front", "back"]
+      .map(position => unique.find(image => image.position === position))
+      .filter(Boolean);
+  };
+
+  const getImage = (product, variantId = null) => {
+    const gallery = getGalleryImages(product, variantId);
+    const front = gallery.find(image => image.position === "front");
+
+    return front?.src || gallery[0]?.src || "";
+  };
+
+  const enabledVariants = product =>
+    (Array.isArray(product.variants) ? product.variants : [])
+      .filter(v =>
+        v &&
+        v.is_enabled !== false &&
+        v.is_available !== false &&
+        Number.isFinite(Number(v.price)) &&
+        Number(v.price) >= 0
+      );
 
   const categoryFor = product => {
     const title = (product.title || "").toLowerCase();
@@ -259,52 +260,106 @@ const enabledVariants = product =>
       .map(select => Number(select.value));
   }
 
-function findSelectedVariant(product) {
-  const variants = enabledVariants(product);
+  function findSelectedVariant(product) {
+    const variants = enabledVariants(product);
 
-  const selects = Array.from(
-    variantControls.querySelectorAll("select[data-option-index]")
-  );
+    const selects = Array.from(
+      variantControls.querySelectorAll("select[data-option-index]")
+    );
 
-  if (!selects.length) {
-    return variants.find(v => v.is_default) || variants[0] || null;
+    if (!selects.length) {
+      return variants.find(v => v.is_default) || variants[0] || null;
+    }
+
+    const options = product.options || [];
+    const selected = {};
+
+    selects.forEach(select => {
+      const index = Number(select.dataset.optionIndex);
+      const option = options[index];
+
+      if (!option) return;
+
+      selected[option.type] = Number(select.value);
+    });
+
+    return variants.find(variant => {
+      const variantIds = variant.options.map(Number);
+
+      const colorOption = options.find(o => o.type === "color");
+      const sizeOption = options.find(o => o.type === "size");
+
+      const colorId = colorOption?.values
+        .map(v => Number(v.id))
+        .find(id => variantIds.includes(id));
+
+      const sizeId = sizeOption?.values
+        .map(v => Number(v.id))
+        .find(id => variantIds.includes(id));
+
+      return (
+        selected.color === colorId &&
+        selected.size === sizeId
+      );
+    }) || null;
   }
 
-  const options = product.options || [];
+  function renderGallery(product, variantId = null) {
+    let gallery = getGalleryImages(product, variantId);
 
-  const selected = {};
+    // Use the full product gallery if variant images are incomplete.
+    if (gallery.length < 2) {
+      gallery = getGalleryImages(product);
+    }
 
-  selects.forEach(select => {
-    const index = Number(select.dataset.optionIndex);
-    const option = options[index];
+    dialogImageThumbnails.replaceChildren();
 
-    if (!option) return;
+    if (!gallery.length) {
+      dialogImage.removeAttribute("src");
+      return;
+    }
 
-    selected[option.type] = Number(select.value);
-  });
+    if (!gallery.some(image => image.position === activeGalleryPosition)) {
+      activeGalleryPosition = gallery.some(image => image.position === "front")
+        ? "front"
+        : gallery[0].position;
+    }
 
-  return variants.find(variant => {
-    const variantIds = variant.options.map(Number);
+    const selectedImage = gallery.find(
+      image => image.position === activeGalleryPosition
+    ) || gallery[0];
 
-    const colorOption = options.find(o => o.type === "color");
-    const sizeOption = options.find(o => o.type === "size");
+    dialogImage.src = selectedImage.src;
+    dialogImage.alt =
+      `${product.title || "Vodou merchandise"} - ${selectedImage.position}`;
 
-    const colorId = colorOption?.values
-      .map(v => Number(v.id))
-      .find(id => variantIds.includes(id));
+    gallery.forEach(image => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "gallery-thumb";
 
-    const sizeId = sizeOption?.values
-      .map(v => Number(v.id))
-      .find(id => variantIds.includes(id));
+      if (image.position === activeGalleryPosition) {
+        button.classList.add("active");
+      }
 
-    return (
-      selected.color === colorId &&
-      selected.size === sizeId
-    );
-  }) || null;
-}
+      button.textContent =
+        image.position.charAt(0).toUpperCase() +
+        image.position.slice(1);
 
-  
+      button.setAttribute(
+        "aria-pressed",
+        String(image.position === activeGalleryPosition)
+      );
+
+      button.addEventListener("click", () => {
+        activeGalleryPosition = image.position;
+        renderGallery(product, variantId);
+      });
+
+      dialogImageThumbnails.appendChild(button);
+    });
+  }
+
   function updateSelectedVariant() {
     if (!activeProduct) return;
 
@@ -314,9 +369,7 @@ function findSelectedVariant(product) {
       selectedPrice.textContent = money(activeVariant.price);
       addToCartButton.disabled = false;
 
-      dialogImage.src =
-        getImage(activeProduct, activeVariant.id) ||
-        getImage(activeProduct);
+      renderGallery(activeProduct, activeVariant.id);
     } else {
       selectedPrice.textContent =
         "That combination is unavailable.";
@@ -327,12 +380,12 @@ function findSelectedVariant(product) {
   function openProduct(product) {
     activeProduct = product;
     activeVariant = null;
+    activeGalleryPosition = "front";
 
     dialogTitle.textContent =
       product.title || "Vodou merchandise";
 
-    dialogImage.src = getImage(product);
-    dialogImage.alt = product.title || "Vodou merchandise";
+    renderGallery(product);
 
     dialogDescription.textContent =
       productDescription(product) ||
@@ -367,13 +420,11 @@ function findSelectedVariant(product) {
         select.id = id;
         select.dataset.optionIndex = String(index);
 
-        // Only use IDs belonging to this specific product option.
         const optionValueIds = new Set(
           (Array.isArray(option.values) ? option.values : [])
             .map(value => Number(value.id))
         );
 
-        // Keep values that actually appear in enabled variants.
         const availableIds = new Set(
           variants.flatMap(variant =>
             variant.options
@@ -413,6 +464,7 @@ function findSelectedVariant(product) {
 
         selects.forEach((select, index) => {
           const option = options[index];
+
           const optionValueIds = new Set(
             (Array.isArray(option.values) ? option.values : [])
               .map(value => Number(value.id))
