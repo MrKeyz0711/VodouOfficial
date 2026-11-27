@@ -31,6 +31,7 @@
   // Checkout elements.
   const checkoutButton = document.getElementById("checkoutButton");
   const checkoutDialog = document.getElementById("checkoutDialog");
+  const checkoutClose = document.getElementById("checkoutClose");
   const shippingAddressForm = document.getElementById("shippingAddressForm");
   const shippingRatesSection = document.getElementById("shippingRatesSection");
   const shippingRatesStatus = document.getElementById("shippingRatesStatus");
@@ -966,6 +967,7 @@
     }
   }
 
+  // Mobile navigation.
   const navToggle = document.getElementById("navToggle");
   const navLinks = document.getElementById("navLinks");
 
@@ -976,15 +978,18 @@
     navToggle.textContent = open ? "×" : "☰";
   });
 
+  // Search and category filtering.
   search.addEventListener("input", render);
   category.addEventListener("change", render);
 
+  // Product dialog.
   dialogClose.addEventListener("click", () => dialog.close());
 
   dialog.addEventListener("click", event => {
     if (event.target === dialog) dialog.close();
   });
 
+  // Cart dialog.
   cartOpenButton.addEventListener("click", () => cartDialog.showModal());
   cartClose.addEventListener("click", () => cartDialog.close());
 
@@ -994,13 +999,31 @@
 
   addToCartButton.addEventListener("click", addActiveToCart);
 
+  // Checkout dialog.
   if (checkoutButton && checkoutDialog) {
     checkoutButton.addEventListener("click", () => {
-      if (!cart.length) return;
+      if (!cart.length) {
+        showShippingMessage("Your cart is empty. Add an item before checkout.", true);
+        return;
+      }
 
       resetShippingRates();
       cartDialog.close();
       checkoutDialog.showModal();
+    });
+  }
+
+  if (checkoutClose && checkoutDialog) {
+    checkoutClose.addEventListener("click", () => {
+      checkoutDialog.close();
+    });
+  }
+
+  if (checkoutDialog) {
+    checkoutDialog.addEventListener("click", event => {
+      if (event.target === checkoutDialog) {
+        checkoutDialog.close();
+      }
     });
   }
 
@@ -1028,8 +1051,22 @@
     payButton.addEventListener("click", startStripeCheckout);
   }
 
-  document.getElementById("year").textContent =
-    new Date().getFullYear();
+  // Explain when a customer returns from Stripe without completing checkout.
+  const checkoutParams = new URLSearchParams(window.location.search);
+
+  if (checkoutParams.get("checkout") === "cancelled") {
+    status.textContent =
+      "Checkout was canceled. Your cart is saved, and you can continue shopping whenever you're ready.";
+
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+
+  // Footer year.
+  const yearElement = document.getElementById("year");
+
+  if (yearElement) {
+    yearElement.textContent = new Date().getFullYear();
+  }
 
   renderCart();
   loadProducts();
