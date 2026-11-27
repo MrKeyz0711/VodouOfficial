@@ -14,6 +14,7 @@
   const dialogClose = document.getElementById("dialogClose");
   const dialogTitle = document.getElementById("dialogTitle");
   const dialogImage = document.getElementById("dialogImage");
+  const dialogImageThumbnails = document.getElementById("dialogImageThumbnails");
   const dialogDescription = document.getElementById("dialogDescription");
   const variantControls = document.getElementById("variantControls");
   const selectedPrice = document.getElementById("selectedPrice");
