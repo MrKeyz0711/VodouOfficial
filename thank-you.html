@@ -19,7 +19,6 @@
       --ink-soft: #383732;
       --green: #128A43;
       --green-deep: #0b5f2f;
-      --lime: #A5C650;
       --white: #fff;
       --display: 'Bevan', serif;
       --body: 'Work Sans', sans-serif;
@@ -258,6 +257,11 @@
 
       let checking = false;
 
+      // Keep the session ID available even after removing it from the URL.
+      let checkoutSessionId = new URLSearchParams(
+        window.location.search
+      ).get("session_id");
+
       function showError(title, description) {
         heading.textContent = title;
         message.textContent = description;
@@ -301,42 +305,62 @@
         orderCard.style.display = "block";
       }
 
-      function showFulfillmentStatus(status) {
-        if (status === "dry_run") {
+      function showFulfillmentStatus(status, testMode) {
+        if (status === "dry_run" || testMode === true) {
           heading.textContent = "Test checkout verified!";
           message.textContent =
             "Your test payment was successfully verified. Thank you for helping us test the Vodou Official merch store.";
           statusNote.textContent =
-            "TEST MODE: No Printify order was created. The store is still using test payments.";
-        } else if (status === "fulfilled") {
+            "TEST MODE: No Printify order was created. This was a test payment, not a real purchase.";
+          return;
+        }
+
+        if (status === "draft_created" || status === "fulfilled") {
           heading.textContent = "Payment confirmed!";
           message.textContent =
-            "Your payment has been verified and an order record has been created.";
+            "Thank you for your order! Your payment was verified and your order has been created with our fulfillment provider.";
+
           statusNote.textContent =
-            "Your order record was created. Production submission and shipping are still subject to review.";
-        } else {
-          heading.textContent = "Payment verified!";
-          message.textContent =
-            "Your payment was successful. We're still confirming the order-processing status.";
-          statusNote.textContent =
-            "Your payment is verified. Order processing is still being checked; you can safely leave this page.";
+            "ORDER CREATED: Your Printify order is currently a draft. We will review and manually approve it before it enters production. You do not need to do anything else right now.";
+          return;
         }
+
+        if (status === "pending") {
+          heading.textContent = "Payment confirmed!";
+          message.textContent =
+            "Your payment was successful. We're waiting for the order-processing confirmation.";
+
+          statusNote.textContent =
+            "Your payment is verified, but the order-processing update has not arrived yet. Please check the order status again shortly.";
+          retryArea.style.display = "flex";
+          retryButton.textContent = "Check Order Status";
+          return;
+        }
+
+        heading.textContent = "Payment verified!";
+        message.textContent =
+          "Your payment was successful. We're still confirming the order-processing status.";
+
+        statusNote.textContent =
+          "Your payment is verified. Order processing is still being checked. Please contact us if this message does not update.";
+        retryArea.style.display = "flex";
+        retryButton.textContent = "Check Order Status";
       }
 
       async function verifyPayment() {
         if (checking) return;
+
         checking = true;
         retryButton.disabled = true;
         retryButton.textContent = "Checking...";
 
-        const sessionId = new URLSearchParams(window.location.search)
-          .get("session_id");
-
-        if (!sessionId || !/^cs_test_[a-zA-Z0-9]+$/.test(sessionId)) {
+        if (!checkoutSessionId ||
+            !/^cs_(test|live)_[a-zA-Z0-9]+$/.test(checkoutSessionId)) {
           showError(
             "No verified checkout found",
-            "We couldn't find a valid test checkout session. Your cart has been left untouched. Return to the merch store if you still need to complete checkout."
+            "We couldn't find a valid checkout session. Your cart has been left untouched. Return to the merch store if you still need to complete checkout."
           );
+
           checking = false;
           retryButton.disabled = false;
           retryButton.textContent = "Check Payment Again";
@@ -346,20 +370,28 @@
         try {
           let data = null;
 
-          // Retry briefly because Stripe webhooks may arrive after the redirect.
+          // Allow time for the Stripe webhook to update order status.
           for (let attempt = 0; attempt < 10; attempt++) {
             const response = await fetch(
-              API + "/checkout-session?session_id=" + encodeURIComponent(sessionId),
-              { method: "GET", cache: "no-store" }
+              API + "/checkout-session?session_id=" +
+              encodeURIComponent(checkoutSessionId),
+              {
+                method: "GET",
+                cache: "no-store"
+              }
             );
 
             if (!response.ok) {
-              throw new Error("The payment verification service returned an error.");
+              throw new Error(
+                "The payment verification service returned an error."
+              );
             }
 
             data = await response.json();
 
-            if (data.verified === true && data.paid === true &&
+            if (data.verified === true &&
+                data.paid === true &&
+                data.fulfillmentStatus &&
                 data.fulfillmentStatus !== "pending") {
               break;
             }
@@ -377,7 +409,7 @@
             return;
           }
 
-          // Only a verified, paid Stripe session is allowed to clear the cart.
+          // Clear the cart only after Stripe confirms a paid session.
           try {
             localStorage.removeItem(CART_KEY);
           } catch (storageError) {
@@ -385,24 +417,30 @@
           }
 
           displayOrder(data);
-          showFulfillmentStatus(data.fulfillmentStatus);
+          showFulfillmentStatus(
+            data.fulfillmentStatus || "pending",
+            data.testMode
+          );
 
-          // Remove the session ID from the visible URL after successful verification.
-          window.history.replaceState({}, document.title, "/thank-you.html");
+          // Hide the session ID from the address bar.
+          // The ID remains in memory so the status button still works.
+          window.history.replaceState(
+            {},
+            document.title,
+            "/thank-you.html"
+          );
 
-          if (data.fulfillmentStatus === "pending") {
-            retryArea.style.display = "flex";
-            retryButton.textContent = "Check Order Status";
-          }
         } catch (error) {
           console.error(error);
+
           showError(
             "We couldn't verify the payment",
-            "There was a connection problem while checking your checkout. Your cart has been preserved. Please try again."
+            "There was a connection problem while checking your checkout. Your cart has been preserved unless payment was already verified. Please try again."
           );
         } finally {
           checking = false;
           retryButton.disabled = false;
+
           if (retryButton.textContent === "Checking...") {
             retryButton.textContent = "Check Payment Again";
           }
