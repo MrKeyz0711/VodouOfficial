@@ -47,6 +47,7 @@
   let selectedShippingOption = null;
   let lastShippingAddress = null;
   let shippingRequestInProgress = false;
+  let checkoutRequestInProgress = false;
 
   const money = cents => new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -231,13 +232,8 @@
       price.className = "product-price";
 
       if (variants.length) {
-        const lowest = Math.min(
-          ...variants.map(v => Number(v.price))
-        );
-
-        const highest = Math.max(
-          ...variants.map(v => Number(v.price))
-        );
+        const lowest = Math.min(...variants.map(v => Number(v.price)));
+        const highest = Math.max(...variants.map(v => Number(v.price)));
 
         price.textContent =
           lowest === highest
@@ -261,18 +257,6 @@
 
     status.textContent =
       `${visible.length} ${visible.length === 1 ? "item" : "items"} in the collection`;
-  }
-
-  function selectedOptionIds() {
-    return Array.from(
-      variantControls.querySelectorAll("select[data-option-index]")
-    )
-      .sort(
-        (a, b) =>
-          Number(a.dataset.optionIndex) -
-          Number(b.dataset.optionIndex)
-      )
-      .map(select => Number(select.value));
   }
 
   function findSelectedVariant(product) {
@@ -406,8 +390,7 @@
       addToCartButton.disabled = false;
       renderGallery(activeProduct, activeVariant.id);
     } else {
-      selectedPrice.textContent =
-        "That combination is unavailable.";
+      selectedPrice.textContent = "That combination is unavailable.";
       addToCartButton.disabled = true;
     }
   }
@@ -417,22 +400,17 @@
     activeVariant = null;
     activeGalleryPosition = "front";
 
-    dialogTitle.textContent =
-      product.title || "Vodou merchandise";
-
+    dialogTitle.textContent = product.title || "Vodou merchandise";
     renderGallery(product);
 
     dialogDescription.textContent =
-      productDescription(product) ||
-      "Official Vodou merchandise.";
+      productDescription(product) || "Official Vodou merchandise.";
 
     variantControls.replaceChildren();
     quantityInput.value = "1";
 
     const variants = enabledVariants(product);
-    const options = Array.isArray(product.options)
-      ? product.options
-      : [];
+    const options = Array.isArray(product.options) ? product.options : [];
 
     if (
       options.length &&
@@ -445,12 +423,10 @@
 
         const label = document.createElement("label");
         const select = document.createElement("select");
-
         const id = `variant-option-${index}`;
 
         label.htmlFor = id;
-        label.textContent =
-          option.name || `Option ${index + 1}`;
+        label.textContent = option.name || `Option ${index + 1}`;
 
         select.id = id;
         select.dataset.optionIndex = String(index);
@@ -468,9 +444,7 @@
           )
         );
 
-        const values = Array.isArray(option.values)
-          ? option.values
-          : [];
+        const values = Array.isArray(option.values) ? option.values : [];
 
         values
           .filter(value => availableIds.has(Number(value.id)))
@@ -492,9 +466,7 @@
 
       if (defaultVariant) {
         const selects = Array.from(
-          variantControls.querySelectorAll(
-            "select[data-option-index]"
-          )
+          variantControls.querySelectorAll("select[data-option-index]")
         );
 
         selects.forEach((select, index) => {
@@ -529,9 +501,7 @@
       variants.forEach(variant => {
         const option = document.createElement("option");
         option.value = String(variant.id);
-        option.textContent =
-          variant.title || `Variant ${variant.id}`;
-
+        option.textContent = variant.title || `Variant ${variant.id}`;
         select.appendChild(option);
       });
 
@@ -565,10 +535,7 @@
 
     const quantity = Math.max(
       1,
-      Math.min(
-        20,
-        Number.parseInt(quantityInput.value, 10) || 1
-      )
+      Math.min(20, Number.parseInt(quantityInput.value, 10) || 1)
     );
 
     const productId = String(activeProduct.id);
@@ -578,10 +545,7 @@
     const existing = cart.find(item => item.key === key);
 
     if (existing) {
-      existing.quantity = Math.min(
-        99,
-        existing.quantity + quantity
-      );
+      existing.quantity = Math.min(99, existing.quantity + quantity);
     } else {
       cart.push({
         key,
@@ -598,6 +562,7 @@
     }
 
     saveCart();
+    resetShippingRates();
     dialog.close();
 
     if (typeof cartDialog.showModal === "function") {
@@ -606,10 +571,7 @@
   }
 
   function renderCart() {
-    const count = cart.reduce(
-      (sum, item) => sum + item.quantity,
-      0
-    );
+    const count = cart.reduce((sum, item) => sum + item.quantity, 0);
 
     cartCount.textContent = String(count);
     cartItemsElement.replaceChildren();
@@ -651,14 +613,8 @@
       const decrease = document.createElement("button");
       decrease.type = "button";
       decrease.textContent = "−";
-      decrease.setAttribute(
-        "aria-label",
-        `Decrease quantity of ${item.title}`
-      );
-      decrease.addEventListener(
-        "click",
-        () => changeQuantity(item.key, -1)
-      );
+      decrease.setAttribute("aria-label", `Decrease quantity of ${item.title}`);
+      decrease.addEventListener("click", () => changeQuantity(item.key, -1));
 
       const quantity = document.createElement("span");
       quantity.textContent = String(item.quantity);
@@ -666,37 +622,21 @@
       const increase = document.createElement("button");
       increase.type = "button";
       increase.textContent = "+";
-      increase.setAttribute(
-        "aria-label",
-        `Increase quantity of ${item.title}`
-      );
-      increase.addEventListener(
-        "click",
-        () => changeQuantity(item.key, 1)
-      );
+      increase.setAttribute("aria-label", `Increase quantity of ${item.title}`);
+      increase.addEventListener("click", () => changeQuantity(item.key, 1));
 
       const remove = document.createElement("button");
       remove.type = "button";
       remove.className = "remove-cart-item";
       remove.textContent = "Remove";
-      remove.addEventListener(
-        "click",
-        () => removeCartItem(item.key)
-      );
+      remove.addEventListener("click", () => removeCartItem(item.key));
 
-      controls.append(
-        decrease,
-        quantity,
-        increase,
-        remove
-      );
-
+      controls.append(decrease, quantity, increase, remove);
       details.append(title, meta, unit, controls);
 
       const lineTotal = document.createElement("strong");
       lineTotal.className = "cart-line-total";
-      lineTotal.textContent =
-        money(item.price * item.quantity);
+      lineTotal.textContent = money(item.price * item.quantity);
 
       row.append(img, details, lineTotal);
       cartItemsElement.appendChild(row);
@@ -732,7 +672,6 @@
     resetShippingRates();
   }
 
-  // Clear old shipping choices whenever the cart changes.
   function resetShippingRates() {
     availableShippingOptions = [];
     selectedShippingOption = null;
@@ -751,14 +690,12 @@
     }
   }
 
-  // Convert the checkout form into the address format expected by the Worker.
   function getShippingAddress() {
     const fullName = document
       .getElementById("shippingName")
       .value.trim();
 
     const nameParts = fullName.split(/\s+/).filter(Boolean);
-
     const firstName = nameParts.shift() || "";
     const lastName = nameParts.join(" ");
 
@@ -779,13 +716,9 @@
     if (!shippingRatesStatus) return;
 
     shippingRatesStatus.textContent = message;
-    shippingRatesStatus.setAttribute(
-      "role",
-      isError ? "alert" : "status"
-    );
+    shippingRatesStatus.setAttribute("role", isError ? "alert" : "status");
   }
 
-  // Display the actual shipping methods returned by Printify.
   function renderShippingOptions(options) {
     shippingOptions.replaceChildren();
 
@@ -815,15 +748,12 @@
 
         shippingOptions
           .querySelectorAll(".shipping-option")
-          .forEach(element => {
-            element.classList.remove("selected");
-          });
+          .forEach(element => element.classList.remove("selected"));
 
         label.classList.add("selected");
 
-        // Payment remains disabled until Stripe checkout is connected.
         if (payButton) {
-          payButton.disabled = true;
+          payButton.disabled = false;
         }
       });
 
@@ -836,7 +766,6 @@
     });
   }
 
-  // Ask the Worker to calculate shipping for the customer's address and cart.
   async function calculateShipping(event) {
     event.preventDefault();
 
@@ -854,6 +783,7 @@
       return;
     }
 
+    resetShippingRates();
     shippingRequestInProgress = true;
 
     const submitButton = document.getElementById("getShippingRatesButton");
@@ -861,10 +791,6 @@
 
     submitButton.disabled = true;
     submitButton.textContent = "Calculating shipping...";
-
-    shippingRatesSection.hidden = true;
-    shippingOptions.replaceChildren();
-    selectedShippingOption = null;
 
     showShippingMessage("Checking available shipping methods...");
 
@@ -901,12 +827,9 @@
       lastShippingAddress = address;
 
       renderShippingOptions(availableShippingOptions);
-
       shippingRatesSection.hidden = false;
 
-      showShippingMessage(
-        "Choose the shipping method you would like."
-      );
+      showShippingMessage("Choose your shipping method, then continue to payment.");
 
     } catch (error) {
       console.error("Vodou shipping calculation:", error);
@@ -923,6 +846,84 @@
     }
   }
 
+  // Create a Stripe Checkout session using the secure Worker endpoint.
+  async function startStripeCheckout(event) {
+    if (event) event.preventDefault();
+
+    if (checkoutRequestInProgress) return;
+
+    if (!cart.length) {
+      showShippingMessage("Your cart is empty.", true);
+      return;
+    }
+
+    if (!selectedShippingOption || !lastShippingAddress) {
+      showShippingMessage(
+        "Please calculate shipping and select a shipping method first.",
+        true
+      );
+      return;
+    }
+
+    checkoutRequestInProgress = true;
+
+    const originalButtonText = payButton.textContent;
+    payButton.disabled = true;
+    payButton.textContent = "Connecting to Stripe...";
+
+    showShippingMessage("Securely preparing your checkout...");
+
+    try {
+      const response = await fetch(
+        `${API_BASE}/create-checkout-session`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify({
+            address: lastShippingAddress,
+            shippingOptionId: selectedShippingOption.id,
+            items: cart.map(item => ({
+              productId: item.productId,
+              variantId: item.variantId,
+              quantity: item.quantity
+            }))
+          })
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result.error || `Checkout request failed (${response.status}).`
+        );
+      }
+
+      if (!result.url || !result.url.startsWith("https://checkout.stripe.com/")) {
+        throw new Error("Stripe did not return a valid checkout link.");
+      }
+
+      showShippingMessage("Opening secure Stripe Checkout...");
+
+      window.location.assign(result.url);
+
+    } catch (error) {
+      console.error("Vodou Stripe checkout:", error);
+
+      showShippingMessage(
+        error.message || "Unable to start checkout. Please try again.",
+        true
+      );
+
+      checkoutRequestInProgress = false;
+      payButton.disabled = false;
+      payButton.textContent = originalButtonText;
+    }
+  }
+
   async function loadProducts() {
     try {
       const response = await fetch(API_URL, {
@@ -932,9 +933,7 @@
       });
 
       if (!response.ok) {
-        throw new Error(
-          `Catalog request failed (${response.status})`
-        );
+        throw new Error(`Catalog request failed (${response.status})`);
       }
 
       const data = await response.json();
@@ -952,12 +951,11 @@
       );
 
       if (!products.length) {
-        throw new Error(
-          "The catalog returned no visible products."
-        );
+        throw new Error("The catalog returned no visible products.");
       }
 
       render();
+
     } catch (error) {
       console.error("Vodou merch catalog:", error);
 
@@ -974,50 +972,28 @@
   navToggle.addEventListener("click", () => {
     const open = navLinks.classList.toggle("open");
 
-    navToggle.setAttribute(
-      "aria-expanded",
-      String(open)
-    );
-
+    navToggle.setAttribute("aria-expanded", String(open));
     navToggle.textContent = open ? "×" : "☰";
   });
 
   search.addEventListener("input", render);
   category.addEventListener("change", render);
 
-  dialogClose.addEventListener(
-    "click",
-    () => dialog.close()
-  );
+  dialogClose.addEventListener("click", () => dialog.close());
 
   dialog.addEventListener("click", event => {
-    if (event.target === dialog) {
-      dialog.close();
-    }
+    if (event.target === dialog) dialog.close();
   });
 
-  cartOpenButton.addEventListener(
-    "click",
-    () => cartDialog.showModal()
-  );
-
-  cartClose.addEventListener(
-    "click",
-    () => cartDialog.close()
-  );
+  cartOpenButton.addEventListener("click", () => cartDialog.showModal());
+  cartClose.addEventListener("click", () => cartDialog.close());
 
   cartDialog.addEventListener("click", event => {
-    if (event.target === cartDialog) {
-      cartDialog.close();
-    }
+    if (event.target === cartDialog) cartDialog.close();
   });
 
-  addToCartButton.addEventListener(
-    "click",
-    addActiveToCart
-  );
+  addToCartButton.addEventListener("click", addActiveToCart);
 
-  // Open the address form from the cart.
   if (checkoutButton && checkoutDialog) {
     checkoutButton.addEventListener("click", () => {
       if (!cart.length) return;
@@ -1028,15 +1004,18 @@
     });
   }
 
-  // Submit address and retrieve live Printify shipping rates.
   if (shippingAddressForm) {
-    shippingAddressForm.addEventListener(
-      "submit",
-      calculateShipping
-    );
+    shippingAddressForm.addEventListener("submit", calculateShipping);
+
+    // If the customer edits their address, require fresh shipping rates.
+    shippingAddressForm.addEventListener("input", () => {
+      if (lastShippingAddress) {
+        resetShippingRates();
+        showShippingMessage("Your address changed. Calculate shipping again.");
+      }
+    });
   }
 
-  // Return to the address form if the customer wants to change it.
   if (changeAddressButton) {
     changeAddressButton.addEventListener("click", () => {
       resetShippingRates();
@@ -1044,15 +1023,9 @@
     });
   }
 
-  // Stripe checkout will be connected in the next stage.
   if (payButton) {
     payButton.disabled = true;
-    payButton.addEventListener("click", event => {
-      event.preventDefault();
-      showShippingMessage(
-        "Payment checkout is not connected yet. Your shipping selection is ready for the next setup step."
-      );
-    });
+    payButton.addEventListener("click", startStripeCheckout);
   }
 
   document.getElementById("year").textContent =
