@@ -268,6 +268,16 @@
     );
 
     if (!selects.length) {
+      const singleSelect = variantControls.querySelector(
+        "select[data-single-variant]"
+      );
+
+      if (singleSelect) {
+        return variants.find(
+          v => String(v.id) === singleSelect.value
+        ) || null;
+      }
+
       return variants.find(v => v.is_default) || variants[0] || null;
     }
 
@@ -353,7 +363,21 @@
 
       button.addEventListener("click", () => {
         activeGalleryPosition = image.position;
-        renderGallery(product, variantId);
+
+        // Switch the image directly instead of rebuilding the gallery.
+        dialogImage.src = image.src;
+        dialogImage.alt =
+          `${product.title || "Vodou merchandise"} - ${image.position}`;
+
+        dialogImageThumbnails
+          .querySelectorAll(".gallery-thumb")
+          .forEach(thumb => {
+            const isActive =
+              thumb.textContent.toLowerCase() === image.position;
+
+            thumb.classList.toggle("active", isActive);
+            thumb.setAttribute("aria-pressed", String(isActive));
+          });
       });
 
       dialogImageThumbnails.appendChild(button);
