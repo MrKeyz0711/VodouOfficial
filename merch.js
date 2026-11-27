@@ -2,7 +2,8 @@
 (() => {
   "use strict";
 
-  const API_URL = "https://vodou-merch-api.kian-bowman25.workers.dev/products";
+  const API_BASE = "https://vodou-merch-api.kian-bowman25.workers.dev";
+  const API_URL = `${API_BASE}/products`;
   const CART_STORAGE_KEY = "vodouMerchCartV1";
 
   const grid = document.getElementById("productGrid");
@@ -27,11 +28,25 @@
   const cartItemsElement = document.getElementById("cartItems");
   const cartSubtotalElement = document.getElementById("cartSubtotal");
 
+  // Checkout elements.
+  const checkoutButton = document.getElementById("checkoutButton");
+  const checkoutDialog = document.getElementById("checkoutDialog");
+  const shippingAddressForm = document.getElementById("shippingAddressForm");
+  const shippingRatesSection = document.getElementById("shippingRatesSection");
+  const shippingRatesStatus = document.getElementById("shippingRatesStatus");
+  const shippingOptions = document.getElementById("shippingOptions");
+  const payButton = document.getElementById("payButton");
+  const changeAddressButton = document.getElementById("changeAddressButton");
+
   let products = [];
   let activeProduct = null;
   let activeVariant = null;
   let activeGalleryPosition = "front";
   let cart = loadCart();
+  let availableShippingOptions = [];
+  let selectedShippingOption = null;
+  let lastShippingAddress = null;
+  let shippingRequestInProgress = false;
 
   const money = cents => new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -317,7 +332,6 @@
   function renderGallery(product, variantId = null) {
     let gallery = getGalleryImages(product, variantId);
 
-    // Use the full product gallery if variant images are incomplete.
     if (gallery.length < 2) {
       gallery = getGalleryImages(product);
     }
@@ -363,8 +377,6 @@
 
       button.addEventListener("click", () => {
         activeGalleryPosition = image.position;
-
-        // Switch the image directly instead of rebuilding the gallery.
         dialogImage.src = image.src;
         dialogImage.alt =
           `${product.title || "Vodou merchandise"} - ${image.position}`;
@@ -392,7 +404,6 @@
     if (activeVariant) {
       selectedPrice.textContent = money(activeVariant.price);
       addToCartButton.disabled = false;
-
       renderGallery(activeProduct, activeVariant.id);
     } else {
       selectedPrice.textContent =
@@ -712,11 +723,204 @@
     }
 
     saveCart();
+    resetShippingRates();
   }
 
   function removeCartItem(key) {
     cart = cart.filter(item => item.key !== key);
     saveCart();
+    resetShippingRates();
+  }
+
+  // Clear old shipping choices whenever the cart changes.
+  function resetShippingRates() {
+    availableShippingOptions = [];
+    selectedShippingOption = null;
+    lastShippingAddress = null;
+
+    if (shippingOptions) {
+      shippingOptions.replaceChildren();
+    }
+
+    if (shippingRatesSection) {
+      shippingRatesSection.hidden = true;
+    }
+
+    if (payButton) {
+      payButton.disabled = true;
+    }
+  }
+
+  // Convert the checkout form into the address format expected by the Worker.
+  function getShippingAddress() {
+    const fullName = document
+      .getElementById("shippingName")
+      .value.trim();
+
+    const nameParts = fullName.split(/\s+/).filter(Boolean);
+
+    const firstName = nameParts.shift() || "";
+    const lastName = nameParts.join(" ");
+
+    return {
+      first_name: firstName,
+      last_name: lastName,
+      email: document.getElementById("shippingEmail").value.trim(),
+      address1: document.getElementById("shippingAddress1").value.trim(),
+      address2: document.getElementById("shippingAddress2").value.trim(),
+      city: document.getElementById("shippingCity").value.trim(),
+      region: document.getElementById("shippingState").value.trim().toUpperCase(),
+      zip: document.getElementById("shippingZip").value.trim(),
+      country: "US"
+    };
+  }
+
+  function showShippingMessage(message, isError = false) {
+    if (!shippingRatesStatus) return;
+
+    shippingRatesStatus.textContent = message;
+    shippingRatesStatus.setAttribute(
+      "role",
+      isError ? "alert" : "status"
+    );
+  }
+
+  // Display the actual shipping methods returned by Printify.
+  function renderShippingOptions(options) {
+    shippingOptions.replaceChildren();
+
+    options.forEach((option, index) => {
+      const label = document.createElement("label");
+      label.className = "shipping-option";
+
+      const radio = document.createElement("input");
+      radio.type = "radio";
+      radio.name = "shippingMethod";
+      radio.value = option.id;
+
+      const details = document.createElement("span");
+      details.className = "shipping-option-details";
+
+      const method = document.createElement("strong");
+      method.textContent = option.label;
+
+      const price = document.createElement("span");
+      price.textContent = money(option.price);
+
+      details.append(method, price);
+      label.append(radio, details);
+
+      radio.addEventListener("change", () => {
+        selectedShippingOption = option;
+
+        shippingOptions
+          .querySelectorAll(".shipping-option")
+          .forEach(element => {
+            element.classList.remove("selected");
+          });
+
+        label.classList.add("selected");
+
+        // Payment remains disabled until Stripe checkout is connected.
+        if (payButton) {
+          payButton.disabled = true;
+        }
+      });
+
+      shippingOptions.appendChild(label);
+
+      if (index === 0) {
+        radio.checked = true;
+        radio.dispatchEvent(new Event("change"));
+      }
+    });
+  }
+
+  // Ask the Worker to calculate shipping for the customer's address and cart.
+  async function calculateShipping(event) {
+    event.preventDefault();
+
+    if (shippingRequestInProgress) return;
+
+    if (!cart.length) {
+      showShippingMessage("Your cart is empty. Add an item before checkout.", true);
+      return;
+    }
+
+    const address = getShippingAddress();
+
+    if (!address.first_name || !address.last_name) {
+      showShippingMessage("Please enter your first and last name.", true);
+      return;
+    }
+
+    shippingRequestInProgress = true;
+
+    const submitButton = document.getElementById("getShippingRatesButton");
+    const originalButtonText = submitButton.textContent;
+
+    submitButton.disabled = true;
+    submitButton.textContent = "Calculating shipping...";
+
+    shippingRatesSection.hidden = true;
+    shippingOptions.replaceChildren();
+    selectedShippingOption = null;
+
+    showShippingMessage("Checking available shipping methods...");
+
+    try {
+      const response = await fetch(`${API_BASE}/shipping`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          address,
+          items: cart.map(item => ({
+            productId: item.productId,
+            variantId: item.variantId,
+            quantity: item.quantity
+          }))
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result.error || `Shipping request failed (${response.status}).`
+        );
+      }
+
+      if (!Array.isArray(result.options) || !result.options.length) {
+        throw new Error("No shipping methods are available for this order.");
+      }
+
+      availableShippingOptions = result.options;
+      lastShippingAddress = address;
+
+      renderShippingOptions(availableShippingOptions);
+
+      shippingRatesSection.hidden = false;
+
+      showShippingMessage(
+        "Choose the shipping method you would like."
+      );
+
+    } catch (error) {
+      console.error("Vodou shipping calculation:", error);
+
+      showShippingMessage(
+        error.message || "We couldn't calculate shipping. Please try again.",
+        true
+      );
+
+    } finally {
+      shippingRequestInProgress = false;
+      submitButton.disabled = false;
+      submitButton.textContent = originalButtonText;
+    }
   }
 
   async function loadProducts() {
@@ -812,6 +1016,44 @@
     "click",
     addActiveToCart
   );
+
+  // Open the address form from the cart.
+  if (checkoutButton && checkoutDialog) {
+    checkoutButton.addEventListener("click", () => {
+      if (!cart.length) return;
+
+      resetShippingRates();
+      cartDialog.close();
+      checkoutDialog.showModal();
+    });
+  }
+
+  // Submit address and retrieve live Printify shipping rates.
+  if (shippingAddressForm) {
+    shippingAddressForm.addEventListener(
+      "submit",
+      calculateShipping
+    );
+  }
+
+  // Return to the address form if the customer wants to change it.
+  if (changeAddressButton) {
+    changeAddressButton.addEventListener("click", () => {
+      resetShippingRates();
+      showShippingMessage("Update your address and calculate shipping again.");
+    });
+  }
+
+  // Stripe checkout will be connected in the next stage.
+  if (payButton) {
+    payButton.disabled = true;
+    payButton.addEventListener("click", event => {
+      event.preventDefault();
+      showShippingMessage(
+        "Payment checkout is not connected yet. Your shipping selection is ready for the next setup step."
+      );
+    });
+  }
 
   document.getElementById("year").textContent =
     new Date().getFullYear();
