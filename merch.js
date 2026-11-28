@@ -28,7 +28,6 @@
   const cartItemsElement = document.getElementById("cartItems");
   const cartSubtotalElement = document.getElementById("cartSubtotal");
 
-  // Checkout elements.
   const checkoutButton = document.getElementById("checkoutButton");
   const checkoutDialog = document.getElementById("checkoutDialog");
   const checkoutClose = document.getElementById("checkoutClose");
@@ -49,6 +48,7 @@
   let lastShippingAddress = null;
   let shippingRequestInProgress = false;
   let checkoutRequestInProgress = false;
+  let galleryTimers = [];
 
   const money = cents => new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -177,6 +177,9 @@
   }
 
   function render() {
+    galleryTimers.forEach(timer => clearInterval(timer));
+    galleryTimers = [];
+
     const query = search.value.trim().toLowerCase();
     const selectedCategory = category.value;
 
@@ -202,12 +205,43 @@
       const imageFrame = document.createElement("div");
       imageFrame.className = "product-image";
 
+      const gallery = getGalleryImages(product);
+      let currentImage = 0;
+      let paused = false;
+
       const img = document.createElement("img");
       img.loading = "lazy";
-      img.alt = product.title || "Vodou merchandise";
+      img.alt = `${product.title || "Vodou merchandise"} - Front`;
       img.src = getImage(product);
+      img.style.cursor = "zoom-in";
+      img.title = "Click to view product images";
+
+      img.addEventListener("click", () => openProduct(product));
 
       imageFrame.appendChild(img);
+
+      if (
+        gallery.length > 1 &&
+        !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ) {
+        const timer = setInterval(() => {
+          if (paused || !img.isConnected) return;
+
+          currentImage = (currentImage + 1) % gallery.length;
+          img.src = gallery[currentImage].src;
+          img.alt = `${product.title || "Vodou merchandise"} - ${gallery[currentImage].position}`;
+        }, 4000);
+
+        galleryTimers.push(timer);
+
+        imageFrame.addEventListener("mouseenter", () => {
+          paused = true;
+        });
+
+        imageFrame.addEventListener("mouseleave", () => {
+          paused = false;
+        });
+      }
 
       const info = document.createElement("div");
       info.className = "product-info";
@@ -847,7 +881,6 @@
     }
   }
 
-  // Create a Stripe Checkout session using the secure Worker endpoint.
   async function startStripeCheckout(event) {
     if (event) event.preventDefault();
 
@@ -967,7 +1000,6 @@
     }
   }
 
-  // Mobile navigation.
   const navToggle = document.getElementById("navToggle");
   const navLinks = document.getElementById("navLinks");
 
@@ -978,18 +1010,15 @@
     navToggle.textContent = open ? "×" : "☰";
   });
 
-  // Search and category filtering.
   search.addEventListener("input", render);
   category.addEventListener("change", render);
 
-  // Product dialog.
   dialogClose.addEventListener("click", () => dialog.close());
 
   dialog.addEventListener("click", event => {
     if (event.target === dialog) dialog.close();
   });
 
-  // Cart dialog.
   cartOpenButton.addEventListener("click", () => cartDialog.showModal());
   cartClose.addEventListener("click", () => cartDialog.close());
 
@@ -999,7 +1028,6 @@
 
   addToCartButton.addEventListener("click", addActiveToCart);
 
-  // Checkout dialog.
   if (checkoutButton && checkoutDialog) {
     checkoutButton.addEventListener("click", () => {
       if (!cart.length) {
@@ -1030,7 +1058,6 @@
   if (shippingAddressForm) {
     shippingAddressForm.addEventListener("submit", calculateShipping);
 
-    // If the customer edits their address, require fresh shipping rates.
     shippingAddressForm.addEventListener("input", () => {
       if (lastShippingAddress) {
         resetShippingRates();
@@ -1051,7 +1078,6 @@
     payButton.addEventListener("click", startStripeCheckout);
   }
 
-  // Explain when a customer returns from Stripe without completing checkout.
   const checkoutParams = new URLSearchParams(window.location.search);
 
   if (checkoutParams.get("checkout") === "cancelled") {
@@ -1061,7 +1087,6 @@
     window.history.replaceState({}, document.title, window.location.pathname);
   }
 
-  // Footer year.
   const yearElement = document.getElementById("year");
 
   if (yearElement) {
