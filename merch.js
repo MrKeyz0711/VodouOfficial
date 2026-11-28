@@ -1,4 +1,3 @@
-
 (() => {
   "use strict";
 
@@ -28,6 +27,7 @@
   const cartItemsElement = document.getElementById("cartItems");
   const cartSubtotalElement = document.getElementById("cartSubtotal");
 
+  // Checkout elements.
   const checkoutButton = document.getElementById("checkoutButton");
   const checkoutDialog = document.getElementById("checkoutDialog");
   const checkoutClose = document.getElementById("checkoutClose");
@@ -39,6 +39,8 @@
   const changeAddressButton = document.getElementById("changeAddressButton");
 
   let products = [];
+  const cardGalleryTimers = [];
+  const selectedCardColors = new Map();
   let activeProduct = null;
   let activeVariant = null;
   let activeGalleryPosition = "front";
@@ -48,7 +50,6 @@
   let lastShippingAddress = null;
   let shippingRequestInProgress = false;
   let checkoutRequestInProgress = false;
-  let galleryTimers = [];
 
   const money = cents => new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -122,6 +123,63 @@
         Number(v.price) >= 0
       );
 
+  const getColorOption = product =>
+    (Array.isArray(product.options) ? product.options : [])
+      .find(option => String(option.type || "").toLowerCase() === "color") || null;
+
+  const getColorValueId = (product, variant) => {
+    const colorOption = getColorOption(product);
+    if (!colorOption || !Array.isArray(variant?.options)) return null;
+
+    const colorValueIds = new Set(
+      (Array.isArray(colorOption.values) ? colorOption.values : [])
+        .map(value => String(value.id))
+    );
+
+    return variant.options.map(String).find(id => colorValueIds.has(id)) || null;
+  };
+
+  const getAvailableColors = product => {
+    const colorOption = getColorOption(product);
+    if (!colorOption) return [];
+
+    const variants = enabledVariants(product);
+    const availableIds = new Set(
+      variants.map(variant => getColorValueId(product, variant)).filter(Boolean)
+    );
+
+    return (Array.isArray(colorOption.values) ? colorOption.values : [])
+      .filter(value => availableIds.has(String(value.id)));
+  };
+
+  const getVariantForColor = (product, colorId) => {
+    if (colorId == null) return enabledVariants(product)[0] || null;
+    return enabledVariants(product).find(variant =>
+      String(getColorValueId(product, variant)) === String(colorId)
+    ) || null;
+  };
+
+  const colorSwatchValue = name => {
+    const value = String(name || "").trim().toLowerCase();
+    const known = {
+      "white": "#ffffff", "black": "#111111", "heather black": "#343434",
+      "charcoal": "#454545", "gray": "#888888", "grey": "#888888",
+      "ash": "#c9c9c9", "silver": "#c0c0c0", "navy": "#18294a",
+      "blue": "#2865a8", "royal": "#2455bd", "red": "#b5232e",
+      "maroon": "#641d32", "burgundy": "#641d32", "green": "#356b48",
+      "forest": "#234d37", "olive": "#77733b", "yellow": "#e4c542",
+      "gold": "#c49a36", "orange": "#d8792c", "pink": "#df91aa",
+      "purple": "#76518f", "lavender": "#b7a2d1", "brown": "#76543b",
+      "natural": "#d8c6a4", "cream": "#eee4cf", "sand": "#c9b99a"
+    };
+    if (known[value]) return known[value];
+    const matchingColor = Object.keys(known).find(key => value.includes(key));
+    if (matchingColor) return known[matchingColor];
+    return typeof CSS !== "undefined" && CSS.supports("color", value)
+      ? value
+      : "#999999";
+  };
+
   const categoryFor = product => {
     const title = (product.title || "").toLowerCase();
 
@@ -177,8 +235,8 @@
   }
 
   function render() {
-    galleryTimers.forEach(timer => clearInterval(timer));
-    galleryTimers = [];
+    cardGalleryTimers.forEach(timer => window.clearInterval(timer));
+    cardGalleryTimers.length = 0;
 
     const query = search.value.trim().toLowerCase();
     const selectedCategory = category.value;
@@ -202,44 +260,135 @@
       const card = document.createElement("article");
       card.className = "product-card";
 
-      const imageFrame = document.createElement("div");
-      imageFrame.className = "product-image";
+      const variants = enabledVariants(product);
+      const colors = getAvailableColors(product);
+      const rememberedColor = selectedCardColors.get(String(product.id));
+      const initialColor = colors.some(color => String(color.id) === String(rememberedColor))
+        ? String(rememberedColor)
+        : colors[0] ? String(colors[0].id) : null;
+      if (initialColor != null) selectedCardColors.set(String(product.id), initialColor);
 
-      const gallery = getGalleryImages(product);
-      let currentImage = 0;
-      let paused = false;
+      let previewVariant = getVariantForColor(product, initialColor);
+      let gallery = getGalleryImages(product, previewVariant?.id);
+      if (!gallery.length) gallery = getGalleryImages(product);
+      let imageIndex = Math.max(0, gallery.findIndex(image => image.position === "front"));
+      let autoPaused = false;
+
+      const imageFrame = document.createElement("div");
+      imageFrame.className = "product-image product-gallery-frame";
 
       const img = document.createElement("img");
       img.loading = "lazy";
-      img.alt = `${product.title || "Vodou merchandise"} - Front`;
-      img.src = getImage(product);
-      img.style.cursor = "zoom-in";
-      img.title = "Click to view product images";
-
-      img.addEventListener("click", () => openProduct(product));
-
+      img.alt = `${product.title || "Vodou merchandise"} - front`;
+      img.src = gallery[imageIndex]?.src || getImage(product, previewVariant?.id);
+      img.tabIndex = 0;
+      img.setAttribute("role", "button");
+      img.setAttribute("aria-label", `View ${product.title || "product"} details`);
+      img.addEventListener("click", () => openProduct(product, selectedCardColors.get(String(product.id)) || null));
+      img.addEventListener("keydown", event => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openProduct(product, selectedCardColors.get(String(product.id)) || null);
+        }
+      });
       imageFrame.appendChild(img);
 
-      if (
-        gallery.length > 1 &&
-        !window.matchMedia("(prefers-reduced-motion: reduce)").matches
-      ) {
-        const timer = setInterval(() => {
-          if (paused || !img.isConnected) return;
+      const updateCardImage = () => {
+        if (!gallery.length) return;
+        const image = gallery[imageIndex];
+        img.src = image.src;
+        img.alt = `${product.title || "Vodou merchandise"} - ${image.position}`;
+      };
 
-          currentImage = (currentImage + 1) % gallery.length;
-          img.src = gallery[currentImage].src;
-          img.alt = `${product.title || "Vodou merchandise"} - ${gallery[currentImage].position}`;
-        }, 4000);
+      const changeCardImage = direction => {
+        if (gallery.length < 2) return;
+        imageIndex = (imageIndex + direction + gallery.length) % gallery.length;
+        updateCardImage();
+      };
 
-        galleryTimers.push(timer);
-
-        imageFrame.addEventListener("mouseenter", () => {
-          paused = true;
+      if (gallery.length > 1) {
+        const previous = document.createElement("button");
+        previous.type = "button";
+        previous.className = "product-gallery-arrow product-gallery-previous";
+        previous.textContent = "‹";
+        previous.setAttribute("aria-label", "Show previous product image");
+        previous.addEventListener("click", event => {
+          event.stopPropagation();
+          autoPaused = true;
+          changeCardImage(-1);
         });
 
-        imageFrame.addEventListener("mouseleave", () => {
-          paused = false;
+        const next = document.createElement("button");
+        next.type = "button";
+        next.className = "product-gallery-arrow product-gallery-next";
+        next.textContent = "›";
+        next.setAttribute("aria-label", "Show next product image");
+        next.addEventListener("click", event => {
+          event.stopPropagation();
+          autoPaused = true;
+          changeCardImage(1);
+        });
+
+        imageFrame.append(previous, next);
+        imageFrame.addEventListener("mouseenter", () => { autoPaused = true; });
+        imageFrame.addEventListener("mouseleave", () => { autoPaused = false; });
+
+        if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          const timer = window.setInterval(() => {
+            if (!autoPaused && !document.hidden) changeCardImage(1);
+          }, 4000);
+          cardGalleryTimers.push(timer);
+        }
+      }
+
+      const swatches = document.createElement("div");
+      swatches.className = "product-color-swatches";
+      if (colors.length) {
+        const colorLabel = document.createElement("span");
+        colorLabel.className = "product-color-label";
+        colorLabel.textContent = "Color:";
+        swatches.appendChild(colorLabel);
+
+        colors.forEach(color => {
+          const swatch = document.createElement("button");
+          const colorName = String(color.title ?? color.name ?? "Color");
+          const isSelected = String(color.id) === String(initialColor);
+          swatch.type = "button";
+          swatch.className = "product-color-swatch";
+          swatch.style.setProperty("--swatch-color", colorSwatchValue(colorName));
+          swatch.title = colorName;
+          swatch.setAttribute("aria-label", `Choose ${colorName}`);
+          swatch.setAttribute("aria-pressed", String(isSelected));
+          if (isSelected) swatch.classList.add("selected");
+
+          swatch.addEventListener("click", () => {
+            const colorId = String(color.id);
+            selectedCardColors.set(String(product.id), colorId);
+            swatches.querySelectorAll(".product-color-swatch").forEach(button => {
+              const selected = button === swatch;
+              button.classList.toggle("selected", selected);
+              button.setAttribute("aria-pressed", String(selected));
+            });
+
+            previewVariant = getVariantForColor(product, colorId);
+            gallery = getGalleryImages(product, previewVariant?.id);
+            if (!gallery.length) gallery = getGalleryImages(product);
+            imageIndex = Math.max(0, gallery.findIndex(image => image.position === "front"));
+            updateCardImage();
+
+            const colorVariants = variants.filter(variant =>
+              String(getColorValueId(product, variant)) === colorId
+            );
+            if (colorVariants.length) {
+              const lowest = Math.min(...colorVariants.map(variant => Number(variant.price)));
+              const highest = Math.max(...colorVariants.map(variant => Number(variant.price)));
+              price.textContent = lowest === highest
+                ? money(lowest)
+                : `From ${money(lowest)}`;
+            }
+          });
+
+          swatches.appendChild(swatch);
         });
       }
 
@@ -262,13 +411,16 @@
       description.textContent =
         productDescription(product) || "Official Vodou merchandise.";
 
-      const variants = enabledVariants(product);
       const price = document.createElement("p");
       price.className = "product-price";
 
       if (variants.length) {
-        const lowest = Math.min(...variants.map(v => Number(v.price)));
-        const highest = Math.max(...variants.map(v => Number(v.price)));
+        const relevantVariants = initialColor == null
+          ? variants
+          : variants.filter(variant => String(getColorValueId(product, variant)) === String(initialColor));
+        const priceVariants = relevantVariants.length ? relevantVariants : variants;
+        const lowest = Math.min(...priceVariants.map(v => Number(v.price)));
+        const highest = Math.max(...priceVariants.map(v => Number(v.price)));
 
         price.textContent =
           lowest === highest
@@ -283,10 +435,14 @@
       button.className = "product-button";
       button.textContent = "Choose options";
       button.disabled = variants.length === 0;
-      button.addEventListener("click", () => openProduct(product));
+      button.addEventListener("click", () => {
+        openProduct(product, selectedCardColors.get(String(product.id)) || null);
+      });
 
       info.append(type, title, description, price, button);
-      card.append(imageFrame, info);
+      card.append(imageFrame);
+      if (colors.length) card.appendChild(swatches);
+      card.appendChild(info);
       grid.appendChild(card);
     });
 
@@ -430,7 +586,7 @@
     }
   }
 
-  function openProduct(product) {
+  function openProduct(product, preferredColorId = null) {
     activeProduct = product;
     activeVariant = null;
     activeGalleryPosition = "front";
@@ -520,6 +676,27 @@
             select.value = String(matchingId);
           }
         });
+
+        if (preferredColorId != null) {
+          const colorOptionIndex = options.findIndex(
+            option => String(option.type || "").toLowerCase() === "color"
+          );
+          const colorVariant = getVariantForColor(product, preferredColorId);
+
+          if (colorOptionIndex >= 0 && colorVariant) {
+            selects.forEach((select, index) => {
+              const option = options[index];
+              const optionValueIds = new Set(
+                (Array.isArray(option.values) ? option.values : [])
+                  .map(value => Number(value.id))
+              );
+              const matchingId = colorVariant.options
+                .map(Number)
+                .find(valueId => optionValueIds.has(valueId));
+              if (matchingId !== undefined) select.value = String(matchingId);
+            });
+          }
+        }
       }
     } else if (variants.length) {
       const group = document.createElement("div");
@@ -881,6 +1058,7 @@
     }
   }
 
+  // Create a Stripe Checkout session using the secure Worker endpoint.
   async function startStripeCheckout(event) {
     if (event) event.preventDefault();
 
@@ -1000,6 +1178,41 @@
     }
   }
 
+  // Styling for card galleries and color swatches is injected here so this update only requires merch.js.
+  const merchInteractionStyles = document.createElement("style");
+  merchInteractionStyles.textContent = `
+    .product-image.product-gallery-frame { position: relative; overflow: hidden; }
+    .product-image.product-gallery-frame img { cursor: zoom-in; }
+    .product-gallery-arrow {
+      position: absolute; top: 50%; transform: translateY(-50%); z-index: 2;
+      width: 38px; height: 38px; border: 1px solid rgba(255,255,255,.55);
+      border-radius: 50%; background: rgba(0,0,0,.58); color: #fff;
+      font: 30px/1 Arial, sans-serif; display: grid; place-items: center;
+      cursor: pointer; padding: 0; transition: background .18s ease, opacity .18s ease;
+    }
+    .product-gallery-arrow:hover, .product-gallery-arrow:focus-visible { background: rgba(0,0,0,.86); }
+    .product-gallery-previous { left: 12px; }
+    .product-gallery-next { right: 12px; }
+    .product-color-swatches {
+      display: flex; align-items: center; flex-wrap: wrap; gap: 9px;
+      padding: 12px 16px 0;
+    }
+    .product-color-label { font-size: .82rem; opacity: .78; margin-right: 2px; }
+    .product-color-swatch {
+      width: 23px; height: 23px; padding: 0; border-radius: 50%;
+      border: 2px solid rgba(120,120,120,.48); background: var(--swatch-color, #999);
+      cursor: pointer; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08);
+    }
+    .product-color-swatch.selected { outline: 2px solid currentColor; outline-offset: 3px; }
+    .product-color-swatch:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+    @media (max-width: 600px) {
+      .product-gallery-arrow { width: 34px; height: 34px; }
+      .product-color-swatches { padding-left: 12px; padding-right: 12px; }
+    }
+  `;
+  document.head.appendChild(merchInteractionStyles);
+
+  // Mobile navigation.
   const navToggle = document.getElementById("navToggle");
   const navLinks = document.getElementById("navLinks");
 
@@ -1010,15 +1223,18 @@
     navToggle.textContent = open ? "×" : "☰";
   });
 
+  // Search and category filtering.
   search.addEventListener("input", render);
   category.addEventListener("change", render);
 
+  // Product dialog.
   dialogClose.addEventListener("click", () => dialog.close());
 
   dialog.addEventListener("click", event => {
     if (event.target === dialog) dialog.close();
   });
 
+  // Cart dialog.
   cartOpenButton.addEventListener("click", () => cartDialog.showModal());
   cartClose.addEventListener("click", () => cartDialog.close());
 
@@ -1028,6 +1244,7 @@
 
   addToCartButton.addEventListener("click", addActiveToCart);
 
+  // Checkout dialog.
   if (checkoutButton && checkoutDialog) {
     checkoutButton.addEventListener("click", () => {
       if (!cart.length) {
@@ -1058,6 +1275,7 @@
   if (shippingAddressForm) {
     shippingAddressForm.addEventListener("submit", calculateShipping);
 
+    // If the customer edits their address, require fresh shipping rates.
     shippingAddressForm.addEventListener("input", () => {
       if (lastShippingAddress) {
         resetShippingRates();
@@ -1078,6 +1296,7 @@
     payButton.addEventListener("click", startStripeCheckout);
   }
 
+  // Explain when a customer returns from Stripe without completing checkout.
   const checkoutParams = new URLSearchParams(window.location.search);
 
   if (checkoutParams.get("checkout") === "cancelled") {
@@ -1087,6 +1306,7 @@
     window.history.replaceState({}, document.title, window.location.pathname);
   }
 
+  // Footer year.
   const yearElement = document.getElementById("year");
 
   if (yearElement) {
